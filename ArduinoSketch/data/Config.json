@@ -1,10 +1,10 @@
 {
-  "WlanEnabled": true,
+  "WlanEnabled": false,
   "WlanSsid": "",
   "WlanPw": "",
   "NtpServerAdr": "de.pool.ntp.org",
   "TZ": "CET-1CEST,M3.5.0,M10.5.0/3",
-  "ApEnabled": false,
+  "ApEnabled": true,
   "ApSsid": "Feeder",
   "ApPw": "",
   "Hostname": "Feeder",
