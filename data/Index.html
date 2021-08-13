@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html;charset=UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+table.ct1 { margin-left:auto;margin-right:auto;border-collapse:collapse; }
+#t1 table, #t1 th, #t1 td { padding:4px;text-align:center;border-collapse:collapse; }
+#t1 th { border:1px solid black;padding-top:10px;background-color:#04AA6D;color:white; }
+#t1 td { border:1px solid black; }
+#t1 tr:nth-child(even) { background-color:#f2f2f2; }
+#t1b th { border:0px;padding-top:10px;padding-bottom:10px;background-color:white; }
+.tab { display:flex;justify-content:center;align-items:center;border:1px solid #ccc;background-color:#f1f1f1;overflow:hidden; }
+.tab button { background-color:inherit;float:left;border:none;outline:none;cursor:pointer;padding:14px 16px;transition:0.3s;font-size:17px; }
+.tab button:hover { background-color:#ddd; }
+.tab button.active { background-color:#ccc; }
+.tabcontent { display:none;padding:6px 12px;border:1px solid #ccc;border-top:none; }
+#t1b input { font-size:1.2em;font-weight:bold; }
+</style>
+</head>
+<body>
+<div class="tab">
+  <button id="TabFütterzeiten" class="tablinks" onclick="TabSelect(event,'Fütterzeiten')">Fütterzeiten</button>
+  <button id="TabKonfiguration" class="tablinks" onclick="TabSelect(event,'Konfiguration')">Konfiguration</button>
+</div>
+
+<div id="Fütterzeiten" class="tabcontent" display=block>
+<form method="post" enctype="application/x-www-form-urlencoded" action="/Set/">
+<table class="ct1" id="t1">
+<thead><caption><h1>Fütterzeiten</h1></caption>
+ <tr id="b"><th>#</th><th>Aktiv</th><th>Zeit</th><th>So</th><th>Mo</th><th>Di</th><th>Mi</th><th>Do</th><th>Fr</th><th>Sa</th><th>Portionen</th></tr>
+<tfoot>
+ <tr id="t1b">
+  <th colspan=5><input type="submit" value="Speichern"></th>
+  <th colspan=6><input type="reset" value="Reset"></th>
+ </tr>
+<tbody>
+ <tr id="Z0">
+  <td id="nr">1</td>
+  <td><input type="checkbox" name="E0_7" id="E0_7"></td>
+  <td><input type="time" name="E0_8" id="E0_8"></td>
+  <td><input type="checkbox" name="E0_0" id="E0_0"></td>
+  <td><input type="checkbox" name="E0_1" id="E0_1"></td>
+  <td><input type="checkbox" name="E0_2" id="E0_2"></td>
+  <td><input type="checkbox" name="E0_3" id="E0_3"></td>
+  <td><input type="checkbox" name="E0_4" id="E0_4"></td>
+  <td><input type="checkbox" name="E0_5" id="E0_5"></td>
+  <td><input type="checkbox" name="E0_6" id="E0_6"></td>
+  <td><select name="E0_9" id="E0_9"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option></select></td>
+ </tr>
+</table>
+</form>
+</div>
+
+<div id="Konfiguration" class="tabcontent" display=none>
+<form method="post" enctype="application/x-www-form-urlencoded" action="/SetConfig/">
+<table class="ct1" id="t2">
+<thead><caption><h1>Konfiguration</h1></caption>
+<tfoot>
+ <tr id="t1b">
+  <th colspan=5><input type="submit" value="Speichern"></th>
+  <th colspan=6><input type="reset" value="Reset"></th>
+ </tr>
+<tbody id="ConfigTable" style="text-align:left;">
+</table>
+</form>
+</div>
+
+<script>
+function TabSelect(evt, cityName) {
+  var i, tabcontent, tablinks;
+  tabcontent=document.getElementsByClassName("tabcontent");
+  for(i=0;i<tabcontent.length;i++) {
+    tabcontent[i].style.display="none";
+  }
+  tablinks=document.getElementsByClassName("tablinks");
+  for(i=0;i<tablinks.length;i++) {
+    tablinks[i].className=tablinks[i].className.replace(" active","");
+  }
+  document.getElementById(cityName).style.display="block";
+  evt.currentTarget.className+=" active";
+}
+// Select Fütterzeiten on load
+document.getElementById("Fütterzeiten").style.display="block";
+document.getElementById("TabFütterzeiten").className+=" active";
+//document.getElementById("Konfiguration").style.display="block";
+//document.getElementById("TabKonfiguration").className+=" active";
+
+function AddConfigEntry(tab,paraname,inputtype)
+ {
+  tab.innerHTML+=`<tr><th><label for="${paraname}">${paraname}: </label></th><th><input type="${inputtype}" id="${paraname}" name="${paraname}" /><th></tr>`;
+ }
+function CreateConfig()
+ {
+  let div=`<tr><th style="padding-top:20px;"></th></tr>`
+  let tab=document.getElementById("ConfigTable")
+  AddConfigEntry(tab,"WlanEnabled","checkbox");
+  AddConfigEntry(tab,"WlanSsid","text");
+  AddConfigEntry(tab,"WlanPw","hidden");
+  AddConfigEntry(tab,"NtpServerAdr","text");
+  AddConfigEntry(tab,"TZ","text");
+  tab.innerHTML+=div
+  AddConfigEntry(tab,"ApEnabled","checkbox");
+  AddConfigEntry(tab,"ApSsid","text");
+  AddConfigEntry(tab,"ApPw","hidden");
+  tab.innerHTML+=div
+  AddConfigEntry(tab,"Hostname","text");
+  tab.innerHTML+=div
+  AddConfigEntry(tab,"ServoPin","number\" min=\"0\" max=\"15");
+  AddConfigEntry(tab,"DirPin","number\" min=\"0\" max=\"15");
+  AddConfigEntry(tab,"ClkPin","number\" min=\"0\" max=\"15");
+  AddConfigEntry(tab,"BtnPin","number\" min=\"0\" max=\"15");
+  tab.innerHTML+=div
+ };
+CreateConfig()
+
+// Original
+function expandTable(data)
+ {
+  let tab=document.querySelector("#t1");
+  let z0=tab.querySelector("#Z0");
+  for(let r=1;r<data.length;++r)
+   {
+    let nz=z0.cloneNode(true);
+    nz.id="Z"+r;
+    let ele=nz.querySelector("#nr");
+    ele.innerHTML=r+1;
+    for(let c=0;c<10;++c)
+     {
+      ele=nz.querySelector("#E0_"+c);
+      let str="E"+r+"_"+c;
+      ele.id=str;
+      ele.name=str;
+     }
+    tab.appendChild(nz);
+   }
+ };
+function setData(data)
+ {
+  let tab=document.querySelector("#t1");
+  for(let r=0;r<data.length;++r)
+   {
+    let row = data[r];
+    for(let c=0;c<10;++c)
+     {
+      let id="#E"+r+"_"+c;
+      let ele=tab.querySelector(id);
+      if(c==9)//Portionen
+       {
+        let opts = ele.querySelectorAll("option");
+        let val = row[2];
+        opts[val].selected = "true";
+       }
+       else if(c==8)//time
+       {
+        ele.value = row[0];
+       }
+       else// W-Day & Aktiv
+       {
+        let val = row[1];
+        ele.checked=((val&(1<<c))!=0);
+       }
+     }
+   }
+ }
+function loadJSON(path,success,error)
+ {
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function()
+   {
+    if(xhr.readyState===XMLHttpRequest.DONE)
+     {
+      if(xhr.status===200) 
+       {
+        if(success) success(JSON.parse(xhr.responseText));
+       } else {
+        if(error) error(xhr);
+       }
+     }
+  };
+ xhr.open("GET", path, true);
+ xhr.send();
+}
+document.addEventListener("DOMContentLoaded", function(){
+ loadJSON('data.json',
+   function(data){console.log(data);expandTable(data);setData(data);},
+   function(xhr){console.error(xhr);}
+  );
+});
+</script>
+</body>
+</html> 
+

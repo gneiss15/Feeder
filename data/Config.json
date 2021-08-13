@@ -1,0 +1,16 @@
+{
+  "WlanEnabled": true,
+  "WlanSsid": "",
+  "WlanPw": "",
+  "NtpServerAdr": "de.pool.ntp.org",
+  "TZ": "CET-1CEST,M3.5.0,M10.5.0/3",
+  "ApEnabled": false,
+  "ApSsid": "Feeder",
+  "ApPw": "",
+  "Hostname": "Feeder",
+  "ServoPin":  0,
+  "DirPin": 13,
+  "ClkPin": 12,
+  "BtnPin": 14
+}
+
