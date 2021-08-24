@@ -7,10 +7,10 @@
 
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
-#include <ArduinoOTA.h>
+#include <LittleFS.h>
 #include <coredecls.h>                  // settimeofday_cb()
 
-#include "FeederParas.h"
+#include "FeedTimes.h"
 #include "FeederConfig.h"
 
 //****************************************************************
@@ -38,14 +38,11 @@ TFeederWifi::TFeederWifi(void)
  {
   FHttpServer.handleClient();
   MDNS.update();
-  ArduinoOTA.handle();
  }
 
 bool TFeederWifi::Setup(void) 
  { 
-  //d Debug( "TFeederWifi::Setup\n" );
-  
-  return SetupWifi() && SetupNTP() && SetupHttpServer() && SetupOTA();
+  return SetupWifi() && SetupNTP() && SetupHttpServer();
  }
 
 //****************************************************************
@@ -54,30 +51,25 @@ bool TFeederWifi::Setup(void)
 
 bool TFeederWifi::SetupWifi(void)
  {
-  //d Debug( "SetupWifi\n" );
-
-  // Set WiFi to station + ap mode and disconnect from an AP if it was previously connected
+  // Set WiFi to configured mode and disconnect from an AP if it was previously connected
   WiFi.disconnect( true );
   delay( 100 );
-  WiFi.mode( WIFI_AP_STA ); // WIFI_STA
+  WiFi.mode( FeederConfig.WifiMode );
   WiFi.setAutoConnect( true );
   WiFi.hostname( FeederConfig.Hostname );
   WiFi.begin( FeederConfig.WlanSsid, FeederConfig.WlanPw );
 
-  //Debug( "Setting soft-AP configuration: %s\n", WiFi.softAPConfig( IPAddress( 192,168,4,1 ), IPAddress( 192,168,4,2 ), IPAddress( 255,255,255,0 ) ) ? "Ready" : "Failed!" );
-  Debug( "Starting soft-AP (Pw): %s\n", WiFi.softAP( FeederConfig.ApSsid, FeederConfig.ApPw ) ? "Ready" : "Failed!" );
-  Debug( "Soft-AP IP address: %s\n", WiFi.softAPIP().toString().c_str() );
-  
   delay( 100 );
   Oled.clearDisplay();
-  
-  #if !defined(DISABLE_WIFI)
+  Oled.setFont( u8g2_font_6x10_mf );
+
+  if( FeederConfig.WlanEnabled )
+   {
     byte count = 0;
     String connectingStr = "Connecting";
   
     while( WiFi.status() != WL_CONNECTED && count < 100 )
      {
-      //d Debug( "SetupWifi: Count: %u\n", count );
       count ++;
       delay( 500 );
       Oled.drawStr( 0, 10, connectingStr );
@@ -91,12 +83,20 @@ bool TFeederWifi::SetupWifi(void)
       Oled.drawStr( 0, 20, "Failed" );
      else
       Oled.XyPrintf( 0, 20, "IP: %s", WiFi.localIP().toString() );
-    Oled.sendBuffer();
-  #else
-    Oled.drawStr( 0, 10, "Wifi disbled" );
-    Oled.sendBuffer();
-    delay( 5000 );
-  #endif
+   }
+   else
+    Oled.drawStr( 0, 10, "Station mode disabled" );
+
+  if( FeederConfig.ApEnabled )   
+   {
+    //!_WiFi.softAPConfig( /*ip*/IPAddress( 192,168,4,1 ), /*gateway*/IPAddress( 192,168,4,200 ), /*subnet*/IPAddress( 255,255,255,0 ) );
+    bool apOk =  WiFi.softAP( FeederConfig.ApSsid, FeederConfig.ApPw );
+    Log( "Starting soft-AP (Pw): %s\n", apOk ? "Ready" : "Failed!" );
+    Log( "Soft-AP IP address: %s\n", WiFi.softAPIP().toString() );
+    Oled.XyPrintf( 0, 30, "AP-Enabled: %s", apOk ? "Ready" : "Failed!" );
+   }
+  Oled.sendBuffer();
+  delay( 5000 );
 
   return true;
  }
@@ -120,23 +120,15 @@ void TFeederWifi::STimeIsSet_cb(void)
 
 bool TFeederWifi::SetupNTP(void)
  {
-  //d Debug( "SetupNTP\n" );
-
-  #if !defined(DISABLE_WIFI)
-    // Setp Ntp
-    // install callback - called when settimeofday is called (by SNTP or us)
-    // once enabled (by DHCP), SNTP is updated every hour
-    settimeofday_cb( STimeIsSet_cb );
-  
-    configTime( FeederConfig.TZ.c_str(), FeederConfig.NtpServerAdr.c_str() );
-  
-    Oled.drawStr( 0, 30, "Wait for Time valid" );
-   #else
-    Oled.drawStr( 0, 30, "No Wait for Time valid (Wifi disbled)" );
-    STimeIsValid = true;
-  #endif
+  // Setp Ntp
+  // install callback - called when settimeofday is called (by SNTP or us)
+  // once enabled (by DHCP), SNTP is updated every hour
+  settimeofday_cb( STimeIsSet_cb );
+  configTime( FeederConfig.TZ.c_str(), FeederConfig.NtpServerAdr.c_str() );
+  //                             1         2 2
+  //                    1234567890123456789012
+  Oled.drawStr( 0, 20, "Wait for Time valid   " );
   Oled.sendBuffer();
-  
   return true;
  }
 
@@ -162,183 +154,174 @@ uint32_t sntp_update_delay_MS_rfc_not_less_than_15000( void )
 #endif
 
 //****************************************************************
-// TFeederWifi (HttpServer)
+// HttpServer Template-Code
+//****************************************************************
+
+#if 0
+void TFeederWifi::SHandle....(void)
+ {
+  #if 0 //d Debug/language
+    if( HttpServer.hasHeader( "accept-language" ) )
+     {
+      // de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7
+      String lang( HttpServer.header( "accept-language" ) );
+      int s = lang.indexOf( ',' );
+      int e = lang.indexOf( ';' );
+      Debug( "SHandleRoot: accept-language: %s\n", HttpServer.header( "accept-language" ) );
+     }
+  #endif
+  
+  HttpServer.send( 200, "text/html", ReadFile( "/Static/Index.html" ) );
+ }
+#endif
+
+//****************************************************************
+// TFeederWifi (HttpServer & FwUpdater)
 //****************************************************************
 
 #define HttpServer FeederWifi.FHttpServer
 
-void TFeederWifi::SHandleNotFound()
+void TFeederWifi::SHandleNotFound(void)
  {
-  String msg = "File Not Found\n\n";
-  msg += "URI: ";
-  msg += HttpServer.uri();
-  msg += "\nMethod: ";
-  msg += (HttpServer.method() == HTTP_GET) ? "GET" : "POST";
-  msg += "\nArguments: ";
-  msg += HttpServer.args();
+  String msg = "File Not Found\n";
+  msg += "\nURI: " + HttpServer.uri();
+  msg += "\nMethod: " + ( HttpServer.method() == HTTP_GET ) ? "GET" : "POST";
+  msg += "\nArguments: " + HttpServer.args();
   msg += "\n";
   for( uint8_t i = 0;  i < HttpServer.args();  ++i )
     msg += " " + HttpServer.argName( i ) + ": " + HttpServer.arg( i )  + "\n";
   HttpServer.send( 404, "text/plain", msg );
  }
 
-void TFeederWifi::SHandleRoot(void)
+void TFeederWifi::SSendPostResponce( bool ok, bool reboot )
  {
-  // Create HTML content
-  HttpServer.send( 200, "text/html", FeederParas.GetHtmlPage() );
- }
-
-void TFeederWifi::SHandleData(void)
- {
-  // Create DATA content
-  HttpServer.send( 200, "text/html", FeederParas.GetJson() );
- }
-
-void TFeederWifi::SHandleSet(void)
- {
-  if( HttpServer.method() != HTTP_POST )
-   {
-    HttpServer.send( 405, "text/plain", "Method Not Allowed" );
+  if( reboot && ok )
+    HttpServer.client().setNoDelay( true );
+  HttpServer.send( 200, "text/plain", ok ? "1" : "0" );
+  if( !reboot || !ok )
     return;
-   }
-
-  #if 0 //d Debug
-    String msg = "POST form was:\n";
-    for( uint8_t i = 0;  i < HttpServer.args();  i++ )
-      msg += " " + HttpServer.argName( i ) + ": " + HttpServer.arg( i ) + "\n";
-    HttpServer.send( 200, "text/plain", msg );
-  #endif
-
-  // Alle HttpServer.args() durchgehen, wenn argName != plain C/R auswerten
-  for( uint8_t i = 0;  i < HttpServer.args();  i++ )
-   {
-    String argName( HttpServer.argName( i ) );
-    if( argName != "plain" )
-      FeederParas.Set
-       ( 
-        argName.substring(1,2).toInt(), // r
-        argName.substring(3,4).toInt(), //c 
-        HttpServer.arg( i ) //argVal
-       );
-   } 
-
-  // Alles OK -> Update FeederParas
-  FeederParas.Save();
-  
-  //?HttpServer.send( 200, "text/html", "<a href='/'> Go Back </a>" ); // Send web page
-  HttpServer.sendHeader( "Location", "/" );
-  HttpServer.send( 302, "text/plain", "Updated– Press Back Button" );
+  delay( 500 );
+  HttpServer.client().stop();
+  ESP.restart();
  }
 
-bool TFeederWifi::SetupHttpServer(void)
+bool TFeederWifi::SChkPost( String postName )
  {
-  //d Debug( "SetupHttpServer\n" );
+  if( HttpServer.hasArg( "plain" ) ) return true;
+  Log( "%s: no body\n", postName );
+  return false;
+ }
 
-  #if !defined(DISABLE_WIFI)
-    FHttpServer.onNotFound( SHandleNotFound );
-    FHttpServer.on( "/", SHandleRoot ); 
-    FHttpServer.on( "/data.json", SHandleData ); 
-    FHttpServer.on( "/Set/", SHandleSet ); 
-  
-    FHttpServer.begin();
-  
-    if( MDNS.begin( FeederConfig.Hostname ) )
+void TFeederWifi::SHandleSetFeedTimes(void)
+ {
+  if( !SChkPost( "FeedTimes" ) ) return;
+  Debug( "FeedTimes: plain: %s\n", HttpServer.arg( "plain" ) );
+  SSendPostResponce( FeedTimes.Set( HttpServer.arg( "plain" ) ), false );
+ }
+
+void TFeederWifi::SHandleSetConfig(void)
+ {
+  if( !SChkPost( "Config" ) ) return;
+  Debug( "Config: plain: %s\n", HttpServer.arg( "plain" ) );
+  SSendPostResponce( FeederConfigInstance.Set( HttpServer.arg( "plain" ) ), true );
+ }
+
+void TFeederWifi::SHandleFwUpdate(void)
+ {
+  // handler for the update form POST (once file upload finishes)
+  SSendPostResponce( !Update.hasError(), true );
+ }
+
+void TFeederWifi::SFwUploader(void)
+ {
+  // handler for the file upload, gets the sketch bytes, and writes them through the Update object
+  HTTPUpload & upload = HttpServer.upload();
+
+  if( upload.status == UPLOAD_FILE_START )
+   {
+    FUpdaterError.clear();
+    WiFiUDP::stopAll();
+    if( upload.name == "filesystem" )
      {
-      //d Debug( "MDNS responder started" );
+      size_t fsSize = size_t( &_FS_end ) - size_t( &_FS_start );
+      close_all_fs();
+      Update.begin( fsSize, U_FS ); // start with max available size
      }
-  #endif
-
-  return true;
- }
-
-//****************************************************************
-// TFeederWifi (OTA)
-//****************************************************************
-
-void OnOtaStart(void)
- {
-  String type( ArduinoOTA.getCommand() == U_FLASH ? "sketch" : "fs" );
-  // NOTE: if updating FS this would be the place to unmount FS using FS.end()
-  Debug( "OTA Start: %s\n", type );
- }
-
-void OnOtaEnd(void)
- {
-  Debug( "\nOTA End\n" );
- }
-
-void OnOtaProgress( uint_t progress, uint_t total )
- {
-  Debug( " Progress: %u %%\n", progress / total / 100 );
- }
-
-void OnOtaError( ota_error_t error )
- {
-  String errorTxt;
-  switch( error )
-   {
-    case OTA_AUTH_ERROR:
-      errorTxt = "Auth Failed";
-      break;
-    case OTA_BEGIN_ERROR:
-      errorTxt = "Begin Failed";
-      break;
-    case OTA_CONNECT_ERROR:
-      errorTxt = "Connect Failed";
-      break;
-    case OTA_RECEIVE_ERROR:
-      errorTxt = "Receive Failed";
-      break;
-    case OTA_END_ERROR:
-      errorTxt = "End Failed";
-      break;
-    default:
-      errorTxt = "???";
-      break;
+     else 
+     {
+      uint32_t maxSketchSpace = ( ESP.getFreeSketchSpace() - 0x1000 ) & 0xFFFFF000;
+      Update.begin( maxSketchSpace, U_FLASH ); //start with max available size
+     }
+    FUploadName = upload.name;
    }
-  
-  Debug( "OTA Error: %u %s\n", error, errorTxt );
+   else if( upload.status == UPLOAD_FILE_WRITE && !FUpdaterError.length() )
+   {
+    if( Update.write( upload.buf, upload.currentSize ) != upload.currentSize )
+      SetErrorFromUpdater();
+   }
+   else if( upload.status == UPLOAD_FILE_END && !FUpdaterError.length() )
+   {
+    if( !Update.end( true ) ) // true to set the size to the current progress
+      SetErrorFromUpdater();
+   }
+   else if( upload.status == UPLOAD_FILE_ABORTED )
+   {
+    Update.end();
+   }
+  delay(0);
  }
 
-void TFeederWifi::SetupHttpUpdater(void)
+void TFeederWifi::SHandleIndex(void)
  {
-  FHttpUpdater.setup( &FHttpServer );
-  
-  MDNS.addService( "http", "tcp", 80 );
-
-  Debug( "HTTPUpdateServer ready! Open http://%s/update in your browser\n", WiFi.softAPIP().toString().c_str() );
- }
-
-void TFeederWifi::SetupArduinoOTA(void)
- {
-  // Port defaults to 8266
-  // ArduinoOTA.setPort( 8266 );
-
-  // Hostname defaults to esp8266-[ChipID]
-  ArduinoOTA.setHostname( FeederConfig.Hostname.c_str() );
-
-  // No authentication by default
-  // ArduinoOTA.setPassword( "pw" );
-  // Password can be set with it's md5 value as well
-  // create hash with:
-  // echo -n "<pw>" | openssl md5
-  // Hint: Same as on PC
-  ArduinoOTA.setPasswordHash( "39f586066e368d03d436d65930709c88" );
-
-  ArduinoOTA.onStart( OnOtaStart );
-  ArduinoOTA.onEnd( OnOtaEnd );
-  ArduinoOTA.onProgress( OnOtaProgress );
-  ArduinoOTA.onError( OnOtaError );
-  ArduinoOTA.begin();
-
-  Debug( "ArduinoOTA ready!\n" );
- }
-
-bool TFeederWifi::SetupOTA(void)
- {
-  SetupHttpUpdater();
-  SetupArduinoOTA();
-  return true;
+  HttpServer.send( 200, "text/html", ReadFile( "/Static/Index.html" ) );
  }
  
+bool TFeederWifi::SetupHttpServer(void)
+ {
+  FHttpServer.onNotFound( SHandleNotFound );
+
+  // Setup a serveStatic for every file inside the dir 'Static'
+  // FHttpServer.serveStatic( "/", LittleFS, "/Static/Index.html" );
+  FHttpServer.on( "/", SHandleIndex ); 
+  FHttpServer.on( "/Index.html", SHandleIndex ); 
+  Dir dir = LittleFS.openDir( "/Static/" );
+  while( dir.next() )
+    if( !dir.isDirectory() )
+     {
+      String fname = dir.fileName();
+      if( fname.charAt( 0 ) != '/' )
+       {
+        Debug( "Dir-Listing of /Static/, found file: %s\n", fname );
+        fname = "/" + fname;
+       }
+      if( fname != "/Index.html" )
+       {
+        String fsName = "/Static" + fname;
+        FHttpServer.serveStatic( fname.c_str(), LittleFS, fsName.c_str() );
+       }
+     }
+
+  FHttpServer.on( "/SetFeedTimes/", HTTP_POST, SHandleSetFeedTimes ); 
+  FHttpServer.on( "/SetConfig/", HTTP_POST, SHandleSetConfig ); 
+  FHttpServer.on( "/FwUpdate/", HTTP_POST, SHandleFwUpdate, SFwUploader ); 
+
+  FHttpServer.collectHeaders( "accept-language" );
+
+  FHttpServer.begin();
+
+  MDNS.begin( FeederConfig.Hostname );
+  MDNS.addService( "http", "tcp", 80 );
+
+  return true;
+ }
+void TFeederWifi::SetErrorFromUpdater(void)
+ {
+  StreamString str;
+  Update.printError(str);
+  FUpdaterError = str;
+ }
+String TFeederWifi::FUpdaterError;
+String TFeederWifi::FUploadName;
+
+
 #undef HttpServer

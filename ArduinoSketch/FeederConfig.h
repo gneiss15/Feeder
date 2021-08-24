@@ -8,6 +8,9 @@
 //****************************************************************
 
 #include <GnEsp8266Basics.h>
+//#include <ESP8266WiFiType.h>
+#include <ESP8266WiFi.h>
+#include <ArduinoJson.h>
 
 //****************************************************************
 // Sw Configuration
@@ -19,8 +22,9 @@
 
 typedef struct
  {
-  #define CD( typ, name, defValue ) typ name;
+  #define CD( htmlType, typ, name, defValue ) typ name;
   #include "FeederConfig.inc.h"
+  WiFiMode_t          WifiMode;
  }
  TConfig;
 
@@ -31,26 +35,23 @@ typedef struct
 class TFeederConfig : public TSingleton<TFeederConfig>
  {
   friend class TSingleton<TFeederConfig>;
+  typedef StaticJsonDocument< 1000 > TJsonDoc;
  private:
                       TFeederConfig(void);
+ private:
+  void                SetWifiMode(void);
+  bool                Load( TJsonDoc & doc );
+
  public:
   TConfig             FConfig;
-  bool                FirstLoadOk;   //Debug
-
- private:
-  String              ReadFile( char const * fileName );
 
  public:
   bool                Load(void);
   void                Save(void);
-  void                DebugShow(void);
-
-                      // Get Html-Page
-  String              GetHtmlPage(void) { return ReadFile( "/Config.html" ); }
-                      // Get Paras as JSON object (for Html-Page)
-  String              GetJson(void) { return ReadFile( "/Config.json" ); };
+  bool                Set( String const & jdata );
  };
 #define FeederConfig   TFeederConfig::Instance().FConfig
+#define FeederConfigInstance   TFeederConfig::Instance()
 
 //****************************************************************
 #endif // sentry

@@ -9,60 +9,18 @@
 // Sw Configuration
 //****************************************************************
 
-//#define MONTH_AS_TEXT
-//#define FONTTEST_SMALL
-//#define FONTTEST_BIG
-
 //****************************************************************
 // Vars
 //****************************************************************
 
-#if defined(MONTH_AS_TEXT)
-  char const * MonStrs[ 12 ] = { "Jan", "Feb", "Mär", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" };
-#endif
 char const * WdayStrs[ 7 ] = { "So", "Mo", "Di", "Mi", "Do", "Fr", "Sa" };
 
 //****************************************************************
 // Functions
 //****************************************************************
-#if defined(FONTTEST_SMALL)
-  const uint8_t * smallFonts[] = 
-   {
-    u8g2_font_5x8_mf,         //  0
-    u8g2_font_6x10_mf,        //  1
-    u8g2_font_profont10_mf,   //  2
-    u8g2_font_crox1cb_mf,     //  3
-   };
-#endif
-
-#if defined(FONTTEST_BIG)
-  const uint8_t * bigFonts[] = 
-   {
-    // u8g2_font_10x20_mf,       //  0
-    // u8g2_font_t0_22_mf,       //  1
-    // u8g2_font_t0_22b_mf,      //  2
-    u8g2_font_profont22_mf,   //  0
-    u8g2_font_profont29_mf,   //  1 gut für HH:MM:SS
-    // u8g2_font_crox1cb_mf,     //  2
-    // u8g2_font_crox1c_mf,      //  3
-    // u8g2_font_crox2c_mf,      //  4
-    // u8g2_font_crox3c_mf,      //  8
-    u8g2_font_inr21_mf,       //  2
-    u8g2_font_inr24_mf,       //  3
-    u8g2_font_inr27_mf,       //  4
-    u8g2_font_inr30_mf,       //  5 gut für HH:MM VollBild
-   };
-#endif
-
-#if defined( FONTTEST_SMALL ) || defined( FONTTEST_BIG )
-  #define fontRepNr 5  // 5 sec
-  int fontIdx = 0;
-  int fontRepCnt = fontRepNr;
-#endif
-
 void DrawStringCentered( uint8_t y, String str )
  {
-  u8g2_uint_t sx = Oled.getStrWidth( str.c_str() );
+  u8g2_uint_t sx = Oled.getStrWidth( str );
   int x = ( 128 - sx ) / 2;
   if( x < 0 )
     x = 0;
@@ -91,26 +49,11 @@ void DrawStringCentered( uint8_t y, String str )
 void DrawDate( struct tm const & tm )
  {
   // Assemble date string.
-  #if defined(MONTH_AS_TEXT)
-    String dateStr = String( WdayStrs[ tm.tm_wday ] ) + ", " + TwoDigitStr( tm.tm_mday ) + "." + String( MonStrs[ tm.tm_mon ] ) + "." + String( tm.tm_year + 1900 );
-   #else // Month as Number
-    String dateStr = String( WdayStrs[ tm.tm_wday ] ) + ", " + TwoDigitStr( tm.tm_mday ) + "." + TwoDigitStr( tm.tm_mon ) + "." + String( tm.tm_year + 1900 );
-  #endif
-
-  #if defined(FONTTEST_SMALL)
-    dateStr = String( fontIdx % TableSize( smallFonts ) ) + ". " + dateStr;
-  #endif
-
+  String dateStr = String( WdayStrs[ tm.tm_wday ] ) + ", " + TwoDigitStr( tm.tm_mday ) + "." + TwoDigitStr( tm.tm_mon ) + "." + String( tm.tm_year + 1900 );
   if( tm.tm_isdst > 0 )
     dateStr += " DST";
-
-  #if defined(FONTTEST_SMALL)
-    Oled.setFont( smallFonts[ fontIdx % TableSize( smallFonts ) ] ); 
-    DrawStringCentered( 8, dateStr );
-   #else
-    Oled.setFont( u8g2_font_6x10_mf );
-    DrawStringCentered( 7, dateStr );
-  #endif
+  Oled.setFont( u8g2_font_6x10_mf );
+  DrawStringCentered( 7, dateStr );
  }
 
 // 10x20_mf                             OK, etwas zu klein
@@ -120,41 +63,16 @@ void DrawDate( struct tm const & tm )
 // inr21_mf inr24_mf inr27_mf inr30_mf
 void DrawTime( struct tm const & tm )
  {
-  #if defined(FONTTEST_BIG)
-    Oled.setFont( bigFonts[ fontIdx % TableSize( bigFonts ) ] ); 
-    String str;
-    int idx = fontIdx % TableSize( bigFonts );
-    if( idx < 2 )
-      str = TimeString( idx, tm.tm_min, tm.tm_sec );
-     else
-      str = TimeString( idx, tm.tm_min );
-    
-    DrawStringCentered( 32, str );
-   #else
-    Oled.setFont( u8g2_font_profont29_mf );
-    DrawStringCentered( 32, TimeString( tm.tm_hour, tm.tm_min, tm.tm_sec ) );
-  #endif
+  Oled.setFont( u8g2_font_profont29_mf );
+  DrawStringCentered( 32, TimeString( tm.tm_hour, tm.tm_min, tm.tm_sec ) );
  }
 
 void DrawTimePage( struct tm const & tm )
  {
-  #if defined( FONTTEST_SMALL ) || defined( FONTTEST_BIG )
-    if( --fontRepCnt <= 0 )
-     {
-      ++fontIdx;
-      fontRepCnt = fontRepNr;
-     }
-  #endif
-
-  //static uint8_t dispEnable = 0;
-  
   Oled.clearBuffer();
-  //Oled.setPowerSave( dispEnable );
-  //dispEnable = 1 - dispEnable;
-  
   DrawDate( tm );
   DrawTime( tm );
-  Oled.drawFrame( 0, 0, 128, 32 ); //!
+  //Oled.drawFrame( 0, 0, 128, 32 ); //!
   Oled.sendBuffer();
  }
 

@@ -1,13 +1,14 @@
 //****************************************************************
 
-#ifndef FeederParasH  // sentry
-#define FeederParasH
+#ifndef FeedTimesH  // sentry
+#define FeedTimesH
 
 //****************************************************************
 // Includes
 //****************************************************************
 
 #include <GnEsp8266Basics.h>
+#include <ArduinoJson.h>
 
 //****************************************************************
 // Sw Configuration
@@ -50,20 +51,28 @@ typedef struct
 
 typedef union
  {
-  char                AsChars[ sizeof( TFeedRecord ) * MaxFeedRecords ];
   TFeedRecord         FeedRecords[ MaxFeedRecords ];
  }
  TNvData;
 
 //****************************************************************
-// TFeederParas
+// TFeedTimes
 //****************************************************************
 
-class TFeederParas : public TSingleton<TFeederParas>, TLoopInstance
+class TFeedTimes : public TSingleton<TFeedTimes>, TLoopInstance
  {
-  friend class TSingleton<TFeederParas>;
+  friend class TSingleton<TFeedTimes>;
+  typedef StaticJsonDocument< 1000 > TJsonDoc;
  private:
-                      TFeederParas(void);
+                      TFeedTimes(void);
+ private:
+                      // Set FeedTime( r ) .h & .m to argVal ("hh:mm")
+  void                SetTimeString( uint8_t r, String argVal );
+                      // if tm is a active FeedRecord, return portions for that time, else -1
+  int8_t              CheckTime( struct tm const & tm );
+
+  bool                Load( TJsonDoc & doc );
+
  protected:
                       // Perform "CheckTime" every Minute
   virtual void        Loop(void);
@@ -71,28 +80,16 @@ class TFeederParas : public TSingleton<TFeederParas>, TLoopInstance
  private:
   TNvData             FNvData;
 
-  void                Clear(void);
-  String              ReadFile( char const * fileName );
+ public:
+  bool                Load(void);
+  void                Save(void);
+  bool                Set( String const & jdata );
 
  public:
                       // setup & load data
-  void                Setup(void);
-
-                      // Get Html-Page
-  String              GetHtmlPage(void) { return ReadFile( "/Index.html" ); }
-                      // Get Paras as JSON object (for Html-Page)
-  String              GetJson(void);
-                      // Set Para( r, c ) to argVal
-  void                Set( uint8_t r, uint8_t c, String argVal );
-
-                      // Save / Load Paras to / from file
-  void                Save(void);
-  bool                Load(void);  // true if file was OK
-
-                      // if tm is a active FeedRecord, return portions for that time, else 0
-  uint8_t             CheckTime( struct tm const & tm );
+  void                Setup(void)                                     {}
  };
-#define FeederParas   TFeederParas::Instance()
+#define FeedTimes   TFeedTimes::Instance()
 
 //****************************************************************
 #endif // sentry

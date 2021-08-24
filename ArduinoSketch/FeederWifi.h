@@ -40,21 +40,25 @@ class TFeederWifi : public TSingleton<TFeederWifi>, TLoopInstance
 
   bool                SetupNTP(void);
 
- private: // HttpServer
+ private: // HttpServer & FwUpdater
   static void         SHandleNotFound(void);
-  static void         SHandleRoot(void);
-  static void         SHandleData(void);
-  static void         SHandleSet(void);
+
+  static void         SSendPostResponce( bool ok, bool reboot );
+
+  static bool         SChkPost( String postName );
+
+  static void         SHandleSetFeedTimes(void);
+  static void         SHandleSetConfig(void);
+  static void         SHandleFwUpdate(void);
+  static void         SFwUploader(void);
+  static void         SHandleIndex(void);
 
   ESP8266WebServer    FHttpServer;
   bool                SetupHttpServer(void);
 
- private: // OTA
-  void                SetupHttpUpdater(void);
-  void                SetupArduinoOTA(void);
-  bool                SetupOTA(void);
-
-  ESP8266HTTPUpdateServer FHttpUpdater;
+  static void         SetErrorFromUpdater();
+  static String       FUpdaterError;
+  static String       FUploadName;
  };
 
 #define FeederWifi    TFeederWifi::Instance()

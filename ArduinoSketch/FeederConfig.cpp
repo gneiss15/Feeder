@@ -6,7 +6,6 @@
 //#include <string.h>
 #include "FeederConfig.h"
 #include <LittleFS.h>
-#include <ArduinoJson.h>
 
 //****************************************************************
 // Default-Config
@@ -14,8 +13,9 @@
 
 static TConfig DefaultConfig =
  {
-  #define CD( typ, name, defValue ) defValue,
+  #define CD( htmlType, typ, name, defValue ) defValue,
   #include "FeederConfig.inc.h"
+  WIFI_AP
  };
 
 //****************************************************************
@@ -23,83 +23,79 @@ static TConfig DefaultConfig =
 //****************************************************************
 
 TFeederConfig::TFeederConfig(void)
-: FirstLoadOk( false )   //Debug
  {
-  //d Debug( "TFeederConfig::TFeederConfig\n" );
-  FirstLoadOk = Load(); //Debug
+  Load();
  }
 
-String TFeederConfig::ReadFile( char const * fileName )
+void TFeederConfig::SetWifiMode(void)
  {
-  File f = LittleFS.open( fileName, "r" );
-  if( !f ) 
-   {
-    Debug( "Can't open file: %s\n", fileName );
-    return "";
-   }
-  String res = f.readString();
-  f.close();
-  return res;
+  FConfig.WifiMode = FConfig.WlanEnabled ? FConfig.ApEnabled ? WIFI_AP_STA : WIFI_STA : WIFI_AP;
  }
 
-void TFeederConfig::Save(void)
+
+bool TFeederConfig::Load( TJsonDoc & doc )
  {
-  File f = LittleFS.open( "/Config.json", "w" );
-  if( !f ) 
-   {
-    Debug( "Can't open file for writing: /Config.json\n" );
-    return;
-   }
-
-  StaticJsonDocument< 1000 > doc;
-
-  #define CD( typ, name, defValue ) doc[ #name ] = FConfig.name;
+  #define CD( htmlType, typ, name, defValue ) FConfig.name = doc[ #name ].as<typ>();
   #include "FeederConfig.inc.h"
-
-  serializeJson( doc, f );
-
-  f.close();
+  SetWifiMode();
+  return true;
  }
 
 bool TFeederConfig::Load(void)
  {
   FConfig = DefaultConfig;
+  SetWifiMode();
 
-  File f = LittleFS.open( "/Config.json", "r" );
+  File f = LittleFS.open( "/Static/Config.json", "r" );
   if( !f ) 
    {
-    Debug( "Can't open file: /Config.json\n" );
+    Debug( "Can't open file: /Static/Config.json\n" );
     return false;
    }
 
-  StaticJsonDocument< 1000 > doc;
-
+  TJsonDoc doc;
   DeserializationError error = deserializeJson( doc, f );
   f.close();
-
   if( error )
    {
-    Debug( "File: '/Config.json' deserializeJson() failed: %s\n", error.f_str() );
+    Debug( "File: '/Static/Config.json' deserializeJson() failed: %s\n", error.f_str() );
     return false;
    }
 
-  // Load
-  #define CD( typ, name, defValue ) FConfig.name = doc[ #name ].as<typ>();
-  #include "FeederConfig.inc.h"
-
+  Load( doc );
   return true;
  }
 
-void TFeederConfig::DebugShow(void)
+void TFeederConfig::Save(void)
  {
-  Debug( "\nFeederConfig: FirstLoadOk: %s\n", FirstLoadOk ? "OK" : "Fail" );
+  File f = LittleFS.open( "/Static/Config.json", "w" );
+  if( !f ) 
+   {
+    Debug( "Can't open file for writing: /Static/Config.json\n" );
+    return;
+   }
 
-  // Debug (show all values)
-  #define CD( typ, name, defValue ) CD_##typ( name )
-  #define CD_bool( name ) Debug( #name ": %s\n", FConfig.name ? "true" : "false" );
-  #define CD_int( name ) Debug( #name ": %d\n", FConfig.name );
-  #define CD_String( name ) Debug( #name ": %s\n", FConfig.name.c_str() );
+  TJsonDoc doc;
+  #define CD( htmlType, typ, name, defValue ) doc[ #name ] = FConfig.name;
   #include "FeederConfig.inc.h"
+  SetWifiMode();
 
-  Debug( "\n" );
+  serializeJson( doc, f );
+
+  f.close();
+ }
+ 
+bool TFeederConfig::Set( String const & jdata )
+ {
+  TJsonDoc doc;
+  DeserializationError error = deserializeJson( doc, jdata );
+  if( error )
+   {
+    Debug( "TFeederConfig::Set: deserializeJson() failed: %s\n", error.f_str() );
+    return false;
+   }
+  if( !Load( doc ) )
+    return false;
+  Save();
+  return true;
  }
