@@ -8,7 +8,6 @@
 //****************************************************************
 
 #include <GnEsp8266Basics.h>
-#include <ArduinoJson.h>
 
 //****************************************************************
 // Sw Configuration
@@ -62,32 +61,30 @@ typedef union
 class TFeedTimes : public TSingleton<TFeedTimes>, TLoopInstance
  {
   friend class TSingleton<TFeedTimes>;
-  typedef StaticJsonDocument< 1000 > TJsonDoc;
  private:
                       TFeedTimes(void);
  private:
+  TNvData             FNvData;
+
+ private:
                       // Set FeedTime( r ) .h & .m to argVal ("hh:mm")
   void                SetTimeString( uint8_t r, String argVal );
-                      // if tm is a active FeedRecord, return portions for that time, else -1
-  int8_t              CheckTime( struct tm const & tm );
+                      // if tm is a active FeedRecord, return portions for that time, else 0
+  uint8_t             CheckTime( struct tm const & tm );
 
-  bool                Load( TJsonDoc & doc );
+  bool                Load( String const & jsonStr );
+  bool                Save(void);
 
  protected:
                       // Perform "CheckTime" every Minute
   virtual void        Loop(void);
 
- private:
-  TNvData             FNvData;
-
  public:
-  bool                Load(void);
-  void                Save(void);
-  bool                Set( String const & jdata );
-
+  bool                Set( String const & jsonStr )               { return Load( jsonStr ) && Save(); }
+ 
  public:
                       // setup & load data
-  void                Setup(void)                                     {}
+  void                Setup(void)                                 {}
  };
 #define FeedTimes   TFeedTimes::Instance()
 

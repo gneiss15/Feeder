@@ -23,5 +23,5 @@ while IFS=, read -r a b; do
   ProcessLines $a $b
 done
 echo "\"TLast\":\"d\"}"
-} >../data/ConfigEnties.json
+} >../data/ConfigEntries.json
 

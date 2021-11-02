@@ -20,11 +20,13 @@
 // typedefs
 //****************************************************************
 
+// from ESP8266WiFiType.h: WIFI_OFF = 0, WIFI_STA = 1, WIFI_AP = 2, WIFI_AP_STA = 3
+typedef enum WiFiMode TWifiMode;	
+
 typedef struct
  {
   #define CD( htmlType, typ, name, defValue ) typ name;
   #include "FeederConfig.inc.h"
-  WiFiMode_t          WifiMode;
  }
  TConfig;
 
@@ -35,20 +37,18 @@ typedef struct
 class TFeederConfig : public TSingleton<TFeederConfig>
  {
   friend class TSingleton<TFeederConfig>;
-  typedef StaticJsonDocument< 1000 > TJsonDoc;
  private:
                       TFeederConfig(void);
- private:
-  void                SetWifiMode(void);
-  bool                Load( TJsonDoc & doc );
-
  public:
   TConfig             FConfig;
 
+ private:
+  void                SetWifiMode(void);
+  bool                Load( String const jsonStr );
+
  public:
-  bool                Load(void);
-  void                Save(void);
-  bool                Set( String const & jdata );
+  bool                Save(void);
+  bool                Set( String const jsonStr )                 { return Load( jsonStr ) && Save(); }
  };
 #define FeederConfig   TFeederConfig::Instance().FConfig
 #define FeederConfigInstance   TFeederConfig::Instance()

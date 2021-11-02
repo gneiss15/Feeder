@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html;charset=UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/png" href="/fish.png">
+<link rel="stylesheet" href="Index.css">
+<script type="application/javascript" src="Index.js"></script>
+<!--
+<link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgo=">
+-->
+</head>
+<body>
+
+<div id="ResDiv" style="display:none;">
+</div>
+
+<div id="MainDiv">
+ 
+ <!-- Menu -->
+ <div>
+  <ul class="Menu">
+   <li class="MenuLi" style="float:left">
+    <a class="MenuABlk" id="MLangBlk" onclick="javascript:void(0)">EN</a>
+   </li>
+   <li class="MenuLi">
+    <a class="MenuA" id="MFeedings" onclick="MSelect(0)">
+     <span name='Feedings'></span>
+    </a>
+   </li>
+   <li class="MenuLi">
+    <a class="MenuA" id="MConfig" onclick="MSelect(1)">
+     <span name='Configuration'></span>
+    </a>
+   </li>
+   <li class="MenuLi"><a class="MenuA" id="MUpdate" onclick="MSelect(2)">Fw-Update</a></li>
+   <li class="MenuDdLi" style="float:right">
+    <a class="MenuA" id="MLang" onclick="javascript:void(0)" style="background-color:#3385ff;">EN</a>
+    <div class="MenuDdDiv">
+     <a class="MenuDdA active" id="MEN" onclick="LSelect(0)">EN</a>
+     <a class="MenuDdA" id="MDE" onclick="LSelect(1)">DE</a>
+    </div>
+   </li>
+  </ul>
+ </div>
+ <!-- /Menu -->
+
+ <!-- Feedings -->
+ <div id="Feedings" class="MenuSelectDiv">
+  <table>
+   <thead><caption><h1><span name='Feed-Times'></span></h1></caption>
+    <tr>
+     <th>#</th>
+     <th><span name="Active">Active</span></th>
+     <th><span name="Time">Time</span></th>
+     <th><span name="Sun"></span></th>
+     <th><span name="Mon"></span></th>
+     <th><span name="Tue"></span></th>
+     <th><span name="Wed"></span></th>
+     <th><span name="Thr"></span></th>
+     <th><span name="Fri"></span></th>
+     <th><span name="Sat"></span></th>
+     <th><span name="Portions"></span></th>
+    </tr>
+   <tfoot>
+    <tr>
+     <th colspan=11>
+      <button onClick="SubmitFeedings()" style="float:left;margin-left:60px;"><span name='Save'></span></button>
+      <button onClick="LoadFeedings()" style="float:right;margin-right:60px;"><span name='Reset'></span></button>
+     </th>
+    </tr>
+    <tr>
+     <th colspan=11>
+       <button onClick="MFeed()" style="float:center"><span name='Manual Feed'></span></button>
+     </th>
+    </tr>
+   <tbody id="FeedData">
+  </table>
+ </div>
+ <!-- /Feedings -->
+ 
+ <!-- Config -->
+ <div id="Config" class="MenuSelectDiv">
+  <table>
+   <thead><caption><h1><span name='Configuration'></span></h1></caption>
+   <tfoot>
+    <tr>
+     <th colspan=11>
+      <button onClick="SubmitConfig()" style="float:left;margin-left:60px;"><span name='Save'></span></button>
+      <button onClick="LoadConfig()" style="float:right;margin-right:60px;"><span name='Reset'></span></button>
+     </th>
+    </tr>
+   <tbody id="ConfigData">
+  </table>
+ </div>
+ <!-- /Config -->
+ 
+ <!-- Update -->
+ <div id="Update" class="MenuSelectDiv">
+  <form method='POST' enctype='multipart/form-data' action='/FwUpdate/'>
+   <table>
+    <tr>
+     <th colspan=2>Update Firmware</th>
+    </tr>
+    <tr>
+     <th><input type='file' accept='.bin,.bin.signed,.bin.gz,.bin.gz.signed' name='firmware'></th>
+     <th><input type='submit' value='Update'></th>
+    </tr>
+   </table>
+  </form>
+  <br>
+  <form method='POST' enctype='multipart/form-data' action=/FwUpdate/>
+   <table>
+    <tr>
+     <th colspan=2>Update Filesystem</th>
+    </tr>
+    <tr>
+     <th><input type='file' accept='.littlefs,.littlefs.signed,.littlefs.gz,.littlefs.gz.signed' name='filesystem'></th>
+     <th><input type='submit' value='Update'></th>
+    </tr>
+   </table>
+  </form>
+ </div>
+ <!-- /Update -->
+
+</div><!-- id="MainDiv" -->
+</body>
+<script>
+ document.addEventListener("loaded",FeederSetup());
+</script>
+</html>
+

@@ -3,7 +3,7 @@
 //****************************************************************
 
 #include "FeederWifi.h"
-#include <WifiKit8Oled.h>
+//#include <WifiKit8Oled.h>
 
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
@@ -11,6 +11,7 @@
 #include <coredecls.h>                  // settimeofday_cb()
 
 #include "FeedTimes.h"
+#include "FeederServo.h"
 #include "FeederConfig.h"
 
 //****************************************************************
@@ -55,48 +56,23 @@ bool TFeederWifi::SetupWifi(void)
   WiFi.disconnect( true );
   delay( 100 );
   WiFi.mode( FeederConfig.WifiMode );
-  WiFi.setAutoConnect( true );
-  WiFi.hostname( FeederConfig.Hostname );
-  WiFi.begin( FeederConfig.WlanSsid, FeederConfig.WlanPw );
 
-  delay( 100 );
-  Oled.clearDisplay();
-  Oled.setFont( u8g2_font_6x10_mf );
-
-  if( FeederConfig.WlanEnabled )
+  if( FeederConfig.WifiMode & WIFI_STA )
    {
-    byte count = 0;
-    String connectingStr = "Connecting";
-  
-    while( WiFi.status() != WL_CONNECTED && count < 100 )
-     {
-      count ++;
-      delay( 500 );
-      Oled.drawStr( 0, 10, connectingStr );
-      Oled.sendBuffer();
-      connectingStr += ".";
-     }
-  
-    Oled.clearDisplay();
-    Oled.XyPrintf( 0, 10, "Connection to %s", FeederConfig.WlanSsid );
-    if( WiFi.status() != WL_CONNECTED )
-      Oled.drawStr( 0, 20, "Failed" );
-     else
-      Oled.XyPrintf( 0, 20, "IP: %s", WiFi.localIP().toString() );
+    WiFi.setAutoConnect( true );
+    WiFi.hostname( FeederConfig.Hostname );
+    WiFi.begin( FeederConfig.WlanSsid, FeederConfig.WlanPw );
    }
    else
-    Oled.drawStr( 0, 10, "Station mode disabled" );
+    WiFi.setAutoConnect( false );
 
-  if( FeederConfig.ApEnabled )   
+  if( FeederConfig.WifiMode & WIFI_AP )   
    {
     //!_WiFi.softAPConfig( /*ip*/IPAddress( 192,168,4,1 ), /*gateway*/IPAddress( 192,168,4,200 ), /*subnet*/IPAddress( 255,255,255,0 ) );
-    bool apOk =  WiFi.softAP( FeederConfig.ApSsid, FeederConfig.ApPw );
-    Log( "Starting soft-AP (Pw): %s\n", apOk ? "Ready" : "Failed!" );
-    Log( "Soft-AP IP address: %s\n", WiFi.softAPIP().toString() );
-    Oled.XyPrintf( 0, 30, "AP-Enabled: %s", apOk ? "Ready" : "Failed!" );
+    /*bool apOk =*/ WiFi.softAP( FeederConfig.ApSsid, FeederConfig.ApPw );
+    //Log( "Starting soft-AP (Pw): %s\n", apOk ? "Ready" : "Failed!" );
+    //Log( "Soft-AP IP address: %s\n", WiFi.softAPIP().toString().c_str() );
    }
-  Oled.sendBuffer();
-  delay( 5000 );
 
   return true;
  }
@@ -109,26 +85,24 @@ bool TFeederWifi::STimeIsValid = false;
 
 void TFeederWifi::STimeIsSet_cb(void)
  {
+  Debug( "TFeederWifi::STimeIsSet_cb\n" );
   if( TFeederWifi::STimeIsValid )
     return;
   TFeederWifi::STimeIsValid = true;
   //settimeofday_cb( NULL );
-  Oled.clear();
-  Oled.display();
-  Oled.StartScreenSaver();
  }
 
 bool TFeederWifi::SetupNTP(void)
  {
-  // Setp Ntp
-  // install callback - called when settimeofday is called (by SNTP or us)
-  // once enabled (by DHCP), SNTP is updated every hour
-  settimeofday_cb( STimeIsSet_cb );
-  configTime( FeederConfig.TZ.c_str(), FeederConfig.NtpServerAdr.c_str() );
-  //                             1         2 2
-  //                    1234567890123456789012
-  Oled.drawStr( 0, 20, "Wait for Time valid   " );
-  Oled.sendBuffer();
+  //if( FeederConfig.WifiMode & WIFI_STA )
+   {
+    // Setp Ntp
+    // install callback - called when settimeofday is called (by SNTP or us)
+    // once enabled (by DHCP), SNTP is updated every hour
+    settimeofday_cb( STimeIsSet_cb );
+    configTime( FeederConfig.TZ.c_str(), FeederConfig.NtpServerAdr.c_str() );
+   }
+
   return true;
  }
 
@@ -167,11 +141,11 @@ void TFeederWifi::SHandle....(void)
       String lang( HttpServer.header( "accept-language" ) );
       int s = lang.indexOf( ',' );
       int e = lang.indexOf( ';' );
-      Debug( "SHandleRoot: accept-language: %s\n", HttpServer.header( "accept-language" ) );
+      Debug( "SHandleRoot: accept-language: %s\n", HttpServer.header( "accept-language" ).c_str() );
      }
   #endif
   
-  HttpServer.send( 200, "text/html", ReadFile( "/Static/Index.html" ) );
+  HttpServer.send( 200, "text/html", ReadFile( F( "/Index.html" ) ) );
  }
 #endif
 
@@ -208,21 +182,35 @@ void TFeederWifi::SSendPostResponce( bool ok, bool reboot )
 bool TFeederWifi::SChkPost( String postName )
  {
   if( HttpServer.hasArg( "plain" ) ) return true;
-  Log( "%s: no body\n", postName );
+  Log( "%s: no body\n", postName.c_str() );
   return false;
  }
 
 void TFeederWifi::SHandleSetFeedTimes(void)
  {
   if( !SChkPost( "FeedTimes" ) ) return;
-  Debug( "FeedTimes: plain: %s\n", HttpServer.arg( "plain" ) );
+  Debug( "FeedTimes: plain: %s\n", HttpServer.arg( "plain" ).c_str() );
   SSendPostResponce( FeedTimes.Set( HttpServer.arg( "plain" ) ), false );
+ }
+
+void TFeederWifi::SHandleManualFeed(void)
+ {
+  if( !SChkPost( "ManualFeed" ) ) return;
+  Debug( "ManualFeed\n" );
+  SSendPostResponce( FeederServo.StartOneFeed(), false );
+ }
+
+void TFeederWifi::SHandleMFeedChk(void)
+ {
+  if( !SChkPost( "MFeedChk" ) ) return;
+  Debug( "MFeedChk\n" );
+  SSendPostResponce( FeederServo.Running(), false );
  }
 
 void TFeederWifi::SHandleSetConfig(void)
  {
   if( !SChkPost( "Config" ) ) return;
-  Debug( "Config: plain: %s\n", HttpServer.arg( "plain" ) );
+  Debug( "Config: plain: %s\n", HttpServer.arg( "plain" ).c_str() );
   SSendPostResponce( FeederConfigInstance.Set( HttpServer.arg( "plain" ) ), true );
  }
 
@@ -241,17 +229,23 @@ void TFeederWifi::SFwUploader(void)
    {
     FUpdaterError.clear();
     WiFiUDP::stopAll();
+    #if 0
+      if( upload.name == "filesystem" )
+       {
+        size_t fsSize = size_t( &_FS_end ) - size_t( &_FS_start );
+        close_all_fs();
+        Update.begin( fsSize, U_FS ); // start with max available size
+       }
+       else 
+       {
+        uint32_t maxSketchSpace = ( ESP.getFreeSketchSpace() - 0x1000 ) & 0xFFFFF000;
+        Update.begin( maxSketchSpace, U_FLASH ); //start with max available size
+       }
+    #endif
     if( upload.name == "filesystem" )
-     {
-      size_t fsSize = size_t( &_FS_end ) - size_t( &_FS_start );
       close_all_fs();
-      Update.begin( fsSize, U_FS ); // start with max available size
-     }
-     else 
-     {
-      uint32_t maxSketchSpace = ( ESP.getFreeSketchSpace() - 0x1000 ) & 0xFFFFF000;
-      Update.begin( maxSketchSpace, U_FLASH ); //start with max available size
-     }
+    uint32_t maxSketchSpace = ( ESP.getFreeSketchSpace() - 0x1000 ) & 0xFFFFF000;
+    Update.begin( maxSketchSpace, upload.name == "filesystem" ? U_FS : U_FLASH ); //start with max available size
     FUploadName = upload.name;
    }
    else if( upload.status == UPLOAD_FILE_WRITE && !FUpdaterError.length() )
@@ -271,41 +265,40 @@ void TFeederWifi::SFwUploader(void)
   delay(0);
  }
 
+#if 0
 void TFeederWifi::SHandleIndex(void)
  {
-  HttpServer.send( 200, "text/html", ReadFile( "/Static/Index.html" ) );
+  HttpServer.send( 200, "text/html", ReadFile( F( "/Index.html" ) ) );
  }
+#endif
  
 bool TFeederWifi::SetupHttpServer(void)
  {
   FHttpServer.onNotFound( SHandleNotFound );
 
-  // Setup a serveStatic for every file inside the dir 'Static'
-  // FHttpServer.serveStatic( "/", LittleFS, "/Static/Index.html" );
-  FHttpServer.on( "/", SHandleIndex ); 
-  FHttpServer.on( "/Index.html", SHandleIndex ); 
-  Dir dir = LittleFS.openDir( "/Static/" );
+  // Setup a serveStatic for / as alias for Index.html
+  FHttpServer.serveStatic( "/", LittleFS, "/Index.html" );
+  // Setup a serveStatic for every file inside the dir '/'
+  Dir dir = LittleFS.openDir( "/" );
   while( dir.next() )
     if( !dir.isDirectory() )
      {
       String fname = dir.fileName();
       if( fname.charAt( 0 ) != '/' )
-       {
-        Debug( "Dir-Listing of /Static/, found file: %s\n", fname );
         fname = "/" + fname;
-       }
-      if( fname != "/Index.html" )
-       {
-        String fsName = "/Static" + fname;
-        FHttpServer.serveStatic( fname.c_str(), LittleFS, fsName.c_str() );
-       }
+      //if( fname != "/Index.html" )
+      FHttpServer.serveStatic( fname.c_str(), LittleFS, fname.c_str() );
      }
 
+  // Setup a server.on for dynamic generated answers
   FHttpServer.on( "/SetFeedTimes/", HTTP_POST, SHandleSetFeedTimes ); 
+  FHttpServer.on( "/ManualFeed/", HTTP_POST, SHandleManualFeed ); 
+  FHttpServer.on( "/MFeedChk/", HTTP_POST, SHandleMFeedChk ); 
   FHttpServer.on( "/SetConfig/", HTTP_POST, SHandleSetConfig ); 
   FHttpServer.on( "/FwUpdate/", HTTP_POST, SHandleFwUpdate, SFwUploader ); 
 
-  FHttpServer.collectHeaders( "accept-language" );
+  // For getting accept-language (only when language select by this...
+  //FHttpServer.collectHeaders( "accept-language" );
 
   FHttpServer.begin();
 

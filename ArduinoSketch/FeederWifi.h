@@ -48,10 +48,11 @@ class TFeederWifi : public TSingleton<TFeederWifi>, TLoopInstance
   static bool         SChkPost( String postName );
 
   static void         SHandleSetFeedTimes(void);
+  static void         SHandleManualFeed(void);
+  static void         SHandleMFeedChk(void);
   static void         SHandleSetConfig(void);
   static void         SHandleFwUpdate(void);
   static void         SFwUploader(void);
-  static void         SHandleIndex(void);
 
   ESP8266WebServer    FHttpServer;
   bool                SetupHttpServer(void);

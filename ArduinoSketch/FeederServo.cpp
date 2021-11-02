@@ -38,14 +38,6 @@ bool TFeederServo::Running(void)
  {
   return FRunning;
  }
-int TFeederServo::SetPulseWidthUs(void)
- {
-  return Clks2Us( FSetPulseWidthClks );
- }
-int TFeederServo::ActPulseWidthUs(void)
- {
-  return Clks2Us( FActPulseWidthClks );
- }
 
 bool TFeederServo::Attach( int pinNr )
  {
@@ -85,6 +77,8 @@ bool TFeederServo::Start( int firstSetPulseWidthUs, int secondSetPulseWidthUs, i
  {
   if( FPinNr < 0 )
     return false;
+
+  FHoldCounter = 0;
  
   FSetPulseWidthClks = FSetPulseWidthClkArray[ 0 ] = Us2Clks( firstSetPulseWidthUs );
   FSetPulseWidthClkArray[ 1 ] = Us2Clks( secondSetPulseWidthUs );
@@ -104,7 +98,7 @@ bool TFeederServo::Start( int firstSetPulseWidthUs, int secondSetPulseWidthUs, i
   
   return true;
  }
- 
+
 IRAM_ATTR void TFeederServo::FeederServoIrq(void)
  {
   T1L = FeederServo.FNextLoadValueClks;
@@ -123,7 +117,6 @@ IRAM_ATTR void TFeederServo::FeederServoIrq(void)
         : diff < -FeederServo.FChangeSpeedClks
           ? -FeederServo.FChangeSpeedClks
           : diff;
-      FeederServo.FNextLoadValueClks = FeederServo.FActPulseWidthClks;
       if( FeederServo.FSetPulseWidthClks == FeederServo.FActPulseWidthClks )
         FeederServo.FHoldCounter = FeederServo.FHoldCycles;
      }

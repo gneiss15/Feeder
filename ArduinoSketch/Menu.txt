@@ -1,0 +1,29 @@
+Feeding wird zufrüh als fertig bezeichnet (Servo meldet zu früh...)
+Screensaver !?!
+Speichern Feed-Times ?? funktioniert nicht
+
+Menüs
+x Edit Wifi-Mode
+  -> done inside Status
+
+x Status
+  // Line 1: Wifi-Mode
+  //    Mode: AP + STA
+  //    123456789012345678901
+
+  // Line 2: ST-IP
+  //    StIp:123.456.789.123  WIFI_STA && CONNECTED
+  //    StIp: connecting      !CONNECTED
+  //    StIp: N/A             !WIFI_STA
+  //    123456789012345678901
+
+  // Line 3: AP-IP
+  //    ApIp:123.456.789.123
+  //    123456789012345678901
+	
+x Time
+x Manual Feed
+
+
+x Config-Check in Index.js
+

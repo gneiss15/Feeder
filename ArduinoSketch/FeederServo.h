@@ -19,7 +19,7 @@
 #define ServoDefault_MidPulseWidthUs    1500   // 1500µs = Mittelstellung
 #define ServoDefault_PeriodUs          20000   // 20000us
 
-#define ServoDefault_FullTurnMs         5000   // Angleichung von Soll- und Ist-Wert, so das eine volle Drehbewegung 8s dauert
+#define ServoDefault_FullTurnMs         3000   // Angleichung von Soll- und Ist-Wert, so das eine volle Drehbewegung 3s dauert
 #define ServoDefault_HoldTimeMs         1000   // Nach Angleichung noch 1s lang den Soll-Puls ausgeben
 
 //****************************************************************
@@ -66,13 +66,12 @@ class TFeederServo : public TSingleton<TFeederServo>
   
  public:
   bool                Running(void);
-  int                 SetPulseWidthUs(void);
-  int                 ActPulseWidthUs(void);
 
   bool                Attach( int pinNr );
   void                Detach(void);
   
   bool                Start( int firstSetPulseWidthUs, int secondSetPulseWidthUs = -1, int repeats = 0 );
+  bool                StartOneFeed(void) { return Start( ServoDefault_MinPulseWidthUs, ServoDefault_MaxPulseWidthUs, 1 ); }
  };
 
 #define FeederServo TFeederServo::Instance()

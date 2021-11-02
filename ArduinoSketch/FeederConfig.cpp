@@ -15,7 +15,6 @@ static TConfig DefaultConfig =
  {
   #define CD( htmlType, typ, name, defValue ) defValue,
   #include "FeederConfig.inc.h"
-  WIFI_AP
  };
 
 //****************************************************************
@@ -24,78 +23,36 @@ static TConfig DefaultConfig =
 
 TFeederConfig::TFeederConfig(void)
  {
-  Load();
+  FConfig = DefaultConfig;
+  Load( ReadFile( F( "/Config.json" ) ) );
  }
 
-void TFeederConfig::SetWifiMode(void)
+bool TFeederConfig::Load( String const jsonStr )
  {
-  FConfig.WifiMode = FConfig.WlanEnabled ? FConfig.ApEnabled ? WIFI_AP_STA : WIFI_STA : WIFI_AP;
- }
-
-
-bool TFeederConfig::Load( TJsonDoc & doc )
- {
+  DynamicJsonDocument doc( 512 );
+  DeserializationError error = deserializeJson( doc, jsonStr );
+  //!Debug( "TFeederConfig::Load: %s\njson: %s<<<\n", error.c_str(), jsonStr.c_str() );
+  if( error != DeserializationError::Ok ) // if( error ) ???
+    return false;
   #define CD( htmlType, typ, name, defValue ) FConfig.name = doc[ #name ].as<typ>();
   #include "FeederConfig.inc.h"
-  SetWifiMode();
   return true;
  }
 
-bool TFeederConfig::Load(void)
+bool TFeederConfig::Save(void)
  {
-  FConfig = DefaultConfig;
-  SetWifiMode();
-
-  File f = LittleFS.open( "/Static/Config.json", "r" );
-  if( !f ) 
-   {
-    Debug( "Can't open file: /Static/Config.json\n" );
-    return false;
-   }
-
-  TJsonDoc doc;
-  DeserializationError error = deserializeJson( doc, f );
-  f.close();
-  if( error )
-   {
-    Debug( "File: '/Static/Config.json' deserializeJson() failed: %s\n", error.f_str() );
-    return false;
-   }
-
-  Load( doc );
-  return true;
- }
-
-void TFeederConfig::Save(void)
- {
-  File f = LittleFS.open( "/Static/Config.json", "w" );
-  if( !f ) 
-   {
-    Debug( "Can't open file for writing: /Static/Config.json\n" );
-    return;
-   }
-
-  TJsonDoc doc;
+  //StaticJsonDocument<512> doc;
+  DynamicJsonDocument doc( 512 );
   #define CD( htmlType, typ, name, defValue ) doc[ #name ] = FConfig.name;
   #include "FeederConfig.inc.h"
-  SetWifiMode();
 
-  serializeJson( doc, f );
-
-  f.close();
- }
- 
-bool TFeederConfig::Set( String const & jdata )
- {
-  TJsonDoc doc;
-  DeserializationError error = deserializeJson( doc, jdata );
-  if( error )
+  File f = LittleFS.open( "/Config.json", "w" );
+  if( !f ) 
    {
-    Debug( "TFeederConfig::Set: deserializeJson() failed: %s\n", error.f_str() );
+    Debug( "Can't open file for writing: /Config.json\n" );
     return false;
    }
-  if( !Load( doc ) )
-    return false;
-  Save();
+  serializeJson( doc, f );
+  f.close();
   return true;
  }
