@@ -31,7 +31,7 @@ bool TFeederConfig::Load( String const jsonStr )
  {
   DynamicJsonDocument doc( 512 );
   DeserializationError error = deserializeJson( doc, jsonStr );
-  //!Debug( "TFeederConfig::Load: %s\njson: %s<<<\n", error.c_str(), jsonStr.c_str() );
+  //D Debug( "TFeederConfig::Load: %s\njson: %s<<<\n", error.c_str(), jsonStr.c_str() );
   if( error != DeserializationError::Ok ) // if( error ) ???
     return false;
   #define CD( htmlType, typ, name, defValue ) FConfig.name = doc[ #name ].as<typ>();

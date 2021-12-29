@@ -23,26 +23,25 @@ TFeederStatusMenu::TFeederStatusMenu(void)
   ModeChgPerform();
 
   // Line 1: Wifi-Mode
-  //    Mode AP + STA      T
-  //    123456789012345678901
-  //    Mode AP + STA    T:OK
-  Oled.XyPrintf( 0, LineY( 0 ), "Mode             T:%s", FeederWifi.TimeIsValid() ? "OK" : "--" );
+  //    Mode: AP+STA   NTP:OK
+  //    012345678901234567890
+  Oled.XyPrintf( 0, LineY( 0 ), "Mode:          NTP:%s", FeederWifi.TimeIsValid() ? "OK" : "--" );
                                 
   Oled.setDrawColor( FBlinkColor );
-  Oled.XyPrintf( 30, LineY( 0 ), " %s%s%s", ( FMode & WIFI_AP ) ? "AP" : "", ( FMode == WIFI_AP_STA ) ? " + " : "", ( FMode & WIFI_STA ) ? "STA" : "" );
+  Oled.XyPrintf( 36, LineY( 0 ), "%s%s%s", ( FMode & WIFI_AP ) ? "AP" : "", ( FMode == WIFI_AP_STA ) ? "+" : "", ( FMode & WIFI_STA ) ? "STA" : "" );
   Oled.setDrawColor( 1 );
   
   // Line 2: ST-IP
-  //    StIp 123.456.789.123  WIFI_STA && CONNECTED
-  //    StIp connecting       !CONNECTED
-  //    StIp N/A              !WIFI_STA
-  //    123456789012345678901
-  Oled.XyPrintf( 0, LineY( 1 ), "StIp %s", ( FeederConfig.WifiMode & WIFI_STA ) ? ( WiFi.status() == WL_CONNECTED ) ? WiFi.localIP().toString().c_str() : "connecting" : "N/A" );
+  //    StIp: 123.456.789.123  WIFI_STA && CONNECTED
+  //    StIp: connecting       !CONNECTED
+  //    StIp: N/A              !WIFI_STA
+  //    012345678901234567890
+  Oled.XyPrintf( 0, LineY( 1 ), "StIp: %s", ( FeederConfig.WifiMode & WIFI_STA ) ? ( WiFi.status() == WL_CONNECTED ) ? WiFi.localIP().toString().c_str() : "connecting" : "N/A" );
 
   // Line 3: AP-IP
-  //    ApIp 123.456.789.123
-  //    123456789012345678901
-  Oled.XyPrintf( 0, LineY( 2 ), "ApIp %s", ( FeederConfig.WifiMode & WIFI_AP ) ? WiFi.softAPIP().toString().c_str() : "N/A" );
+  //    ApIp: 123.456.789.123
+  //    012345678901234567890
+  Oled.XyPrintf( 0, LineY( 2 ), "ApIp: %s", ( FeederConfig.WifiMode & WIFI_AP ) ? WiFi.softAPIP().toString().c_str() : "N/A" );
  }
 
 void TFeederStatusMenu::ModeChgEnter(void)
@@ -190,7 +189,6 @@ void TFeederStatusMenu::ModeChgPerform(void)
     Oled.setFont( u8g2_font_profont29_mf );
     Oled.drawCentered( 32, TimeString( tm.tm_hour, tm.tm_min, tm.tm_sec ).c_str() );
 
-    //Oled.drawFrame( 0, 0, 128, 32 ); //!
    }
    else
    {
@@ -219,6 +217,7 @@ TFeederMenu::TFeederMenu(void)
   GnRotEncoder.SetRotCb( Closure( this, &TFeederMenu::RotCb ) );
   GnRotEncoder.SetBtnCb( Closure( this, &TFeederMenu::BtnCb ) );
   Oled.clearDisplay();
+  Oled.StartScreenSaver();
  }
 
 void TFeederMenu::RotCb( int16_t & absCnt, int16_t relCnt )

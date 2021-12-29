@@ -26,8 +26,6 @@
  "FeedTimesOk" : ["Feed-Times changed","Fütterzeiten geändert"],
  "ConfigNok" : ["Changing Configuration failed!","Änderung der Konfiguration fehlgeschlagen!"],
  "ConfigOk" : ["Config changed, Rebooting...","Konfiguration geändert, Neustart..."],
- "FwUpdateNok" : ["Firmware-Update failed!","Firmware-Update fehlgeschlagen!"],
- "FwUpdateOk" : ["Firmware-Update successfully, Rebooting...","Firmware-Update erfolgreich, Neustart..."],
  "ManualFeedNok" : ["Manual-Feed failed!","Manuelle Fütterung fehlgeschlagen!"],
  "ManualFeedOk" : ["Feeding...","Fütterung..."],
  "Done" : ["Done","Fertig"],

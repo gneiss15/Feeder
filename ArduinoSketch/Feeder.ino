@@ -3,6 +3,7 @@
 //****************************************************************
 
 #include <LittleFS.h>
+
 #include "FeederConfig.h"
 #include "FeederServo.h"
 #include "FeederWifi.h"
@@ -12,10 +13,13 @@
 // Sw Configuration
 //****************************************************************
 
+//? #include <GnFTPServer.h>
+//? #define FtpServer GnFtpServer
+
 // Server-Type for Simple Ftp Server
 
-#define DEFAULT_FTP_SERVER_NETWORK_TYPE_ESP8266   NETWORK_ESP8266
-#define DEFAULT_STORAGE_TYPE_ESP8266 STORAGE_LITTLEFS
+//? #define DEFAULT_FTP_SERVER_NETWORK_TYPE_ESP8266   NETWORK_ESP8266
+//? #define DEFAULT_STORAGE_TYPE_ESP8266 STORAGE_LITTLEFS
 //? #include <SimpleFTPServer.h>
 
 //****************************************************************
@@ -63,41 +67,40 @@ void setup(void)
   bool fsMounted = LittleFS.begin();
   if( !fsMounted )
     Debug( "Can't mount LittleFS\n" );
-    #if 0 //d 
    else
-//?     ftpSrv.begin( "esp8266","esp8266" );    //username, password for ftp.   (default 21, 50009 for PASV)
-     else
-     {
-      struct FSInfo fs_info;
-      LittleFS.info( fs_info );
-      Debug
-       (
-        "FSInfo:\n"
-        "  totalBytes: %u\n"
-        "  usedBytes: %u\n"
-        "  blockSize: %u\n"
-        "  pageSize: %u\n"
-        "  maxOpenFiles: %u\n"
-        "  maxPathLength: %u\n\n",
-        fs_info.totalBytes,
-        fs_info.usedBytes,
-        fs_info.blockSize,
-        fs_info.pageSize,
-        fs_info.maxOpenFiles,
-        fs_info.maxPathLength
-       );
-     }
-    #endif
+    ftpSrv.begin( "esp8266","esp8266" );    //username, password for ftp.   (default 21, 50009 for PASV)
+
+  #if 0 //d 
+  if( fsMounted )
+   {
+    struct FSInfo fs_info;
+    LittleFS.info( fs_info );
+    Debug
+     (
+      "FSInfo:\n"
+      "  totalBytes: %u\n"
+      "  usedBytes: %u\n"
+      "  blockSize: %u\n"
+      "  pageSize: %u\n"
+      "  maxOpenFiles: %u\n"
+      "  maxPathLength: %u\n\n",
+      fs_info.totalBytes,
+      fs_info.usedBytes,
+      fs_info.blockSize,
+      fs_info.pageSize,
+      fs_info.maxOpenFiles,
+      fs_info.maxPathLength
+     );
+   }
+  #endif
 
   FeedTimes.Setup();
   FeederWifi.Setup();
   FeederServo.Attach( FeederConfig.ServoPin );
-
-  //!Oled.StartScreenSaver();
  }
 
 void loop(void)
  {
   LoopInstances.Loop();
-//? ftpSrv.handleFTP();        //make sure in loop you call handleFTP()!!  
+  //? ftpSrv.handleFTP();        //make sure in loop you call handleFTP()!!  
  }

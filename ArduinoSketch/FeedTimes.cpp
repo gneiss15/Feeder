@@ -28,7 +28,7 @@ void TFeedTimes::SetTimeString( uint8_t r, String argVal )
   TFeedRecord & fr = FNvData.FeedRecords[ r ];
   fr.h = argVal.substring( 0, 2 ).toInt();
   fr.m = argVal.substring( 3, 5 ).toInt();
-  //!Debug( "TFeedTimes::SetTimeString: r:%u, argVal:%s, h-str:%s, m-str:%s, h:%u, m:%u\n", r, argVal.c_str(), argVal.substring( 0, 2 ).c_str(), argVal.substring( 3, 5 ).c_str(), fr.h, fr.m );
+  //D Debug( "TFeedTimes::SetTimeString: r:%u, argVal:%s, h-str:%s, m-str:%s, h:%u, m:%u\n", r, argVal.c_str(), argVal.substring( 0, 2 ).c_str(), argVal.substring( 3, 5 ).c_str(), fr.h, fr.m );
  }
 
 uint8_t TFeedTimes::CheckTime( struct tm const & tm )
@@ -48,7 +48,7 @@ bool TFeedTimes::Load( String const & jsonStr )
  {
   DynamicJsonDocument doc( 768 );
   DeserializationError error = deserializeJson( doc, jsonStr );
-  //! Debug( "TFeedTimes::Load: %s, bool:%s\njson: %s<<<\n", error ? "NOK" : "OK", error.c_str(), jsonStr.c_str() );
+  //D Debug( "TFeedTimes::Load: %s, bool:%s\njson: %s<<<\n", error ? "NOK" : "OK", error.c_str(), jsonStr.c_str() );
   if( error != DeserializationError::Ok ) // if( error ) ???
     return false;
   JsonArray arr = doc.as<JsonArray>();

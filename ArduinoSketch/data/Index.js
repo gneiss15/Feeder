@@ -197,14 +197,12 @@ function FeedTimesNok(e){e.innerHTML=`${ResHeader(0,"FeedTimesNok")}${ReloadCoun
 function FeedTimesOk(e){e.innerHTML=`${ResHeader(1,"FeedTimesOk")}${ReloadCountdown()}`;}
 function ConfigNok(e){e.innerHTML=`${ResHeader(0,"ConfigNok")}${ReloadCountdown()}`;}
 function ConfigOk(e){e.innerHTML=`${ResHeader(1,"ConfigOk")}${Tr("ReloadTxt1")}<br><button onclick=location="/Index.html">${Tr("Reload")}</button>`;}
-function FwUpdateNok(e){e.innerHTML=`${ResHeader(0,"FwUpdateNok")}${ReloadCountdown()}`;}
-function FwUpdateOk(e){e.innerHTML=`${ResHeader(1,"FwUpdateOk")}${Tr("ReloadTxt1")}<br><button onclick=location="/Index.html">${Tr("Reload")}</button>`;}
 function ManualFeedNok(e){e.innerHTML=`${ResHeader(0,"ManualFeedNok")}${ReloadCountdown()}`;}
-function ManualFeedOk(e){setTimeout(function(){PostRequest(4,"/MFeedChk/");},5000);e.innerHTML=`${ResHeader(1,"ManualFeedOk",6)}`;}
-function MFeedChkActive(e){setTimeout(function(){PostRequest(4,"/MFeedChk/");},5000);}
+function ManualFeedOk(e){setTimeout(function(){PostRequest(3,"/MFeedChk/");},5000);e.innerHTML=`${ResHeader(1,"ManualFeedOk",6)}`;}
+function MFeedChkActive(e){setTimeout(function(){PostRequest(3,"/MFeedChk/");},5000);}
 function MFeedChkDone(e){e.innerHTML+=`<br><button onclick=location="/Index.html">${Tr("Done")}</button>`;}
 function SetStatus(func,ok){
- const funcTab=[[FeedTimesNok,FeedTimesOk],[ManualFeedNok,ManualFeedOk],[ConfigNok,ConfigOk],[FwUpdateNok,FwUpdateOk],[MFeedChkActive,MFeedChkDone]];
+ const funcTab=[[FeedTimesNok,FeedTimesOk],[ManualFeedNok,ManualFeedOk],[ConfigNok,ConfigOk],[MFeedChkActive,MFeedChkDone]];
  document.getElementById("MainDiv").style.display="none";
  document.getElementById("ResDiv").style.display="block";
  let ResDiv=document.getElementById("ResDiv");

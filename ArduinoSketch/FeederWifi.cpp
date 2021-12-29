@@ -14,6 +14,8 @@
 #include "FeederServo.h"
 #include "FeederConfig.h"
 
+#include <WifiKit8Oled.h>
+
 //****************************************************************
 // Sw Configuration
 //****************************************************************
@@ -85,10 +87,11 @@ bool TFeederWifi::STimeIsValid = false;
 
 void TFeederWifi::STimeIsSet_cb(void)
  {
-  Debug( "TFeederWifi::STimeIsSet_cb\n" );
+  //d Debug( "TFeederWifi::STimeIsSet_cb\n" );
   if( TFeederWifi::STimeIsValid )
     return;
   TFeederWifi::STimeIsValid = true;
+  Oled.StartScreenSaver();
   //settimeofday_cb( NULL );
  }
 
@@ -189,35 +192,117 @@ bool TFeederWifi::SChkPost( String postName )
 void TFeederWifi::SHandleSetFeedTimes(void)
  {
   if( !SChkPost( "FeedTimes" ) ) return;
-  Debug( "FeedTimes: plain: %s\n", HttpServer.arg( "plain" ).c_str() );
+  //d Debug( "FeedTimes: plain: %s\n", HttpServer.arg( "plain" ).c_str() );
   SSendPostResponce( FeedTimes.Set( HttpServer.arg( "plain" ) ), false );
  }
 
 void TFeederWifi::SHandleManualFeed(void)
  {
   if( !SChkPost( "ManualFeed" ) ) return;
-  Debug( "ManualFeed\n" );
+  //d Debug( "ManualFeed\n" );
   SSendPostResponce( FeederServo.StartOneFeed(), false );
  }
 
 void TFeederWifi::SHandleMFeedChk(void)
  {
   if( !SChkPost( "MFeedChk" ) ) return;
-  Debug( "MFeedChk\n" );
+  //d Debug( "MFeedChk\n" );
   SSendPostResponce( FeederServo.Running(), false );
  }
 
 void TFeederWifi::SHandleSetConfig(void)
  {
   if( !SChkPost( "Config" ) ) return;
-  Debug( "Config: plain: %s\n", HttpServer.arg( "plain" ).c_str() );
+  //d Debug( "Config: plain: %s\n", HttpServer.arg( "plain" ).c_str() );
   SSendPostResponce( FeederConfigInstance.Set( HttpServer.arg( "plain" ) ), true );
  }
+
+const String FwUpdatePostResponceStr = "<!DOCTYPE html>\
+<html>\
+<head>\
+<meta http-equiv=\"content-type\" content=\"text/html;charset=UTF-8\">\
+<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\
+<link rel=\"icon\" type=\"image/png\" href=\"/fish.png\">\
+<style>\
+div {text-align: center;}\
+button {font-size:1.2em; font-weight:bold; background-color:#04AA6D; border-radius:6px; padding:5px 20px;}\
+</style>\
+</head>\
+<body>\
+<div id=\"ResDiv\" style=\"display:block\">\
+</div>\
+</body>\
+<script>\
+function GetCookie(cname){\
+ let name=cname+\"=\";\
+ let ca=(decodeURIComponent(document.cookie)).split(';');\
+ for(let i=0;i<ca.length;i++){\
+  let c=ca[i];\
+  while(c.charAt(0)==' '){c=c.substring(1);}\
+  if(c.indexOf(name)==0)return c.substring(name.length,c.length);}\
+ return \"\";}\
+function GetNrCookie(cname){\
+ let r=GetCookie(cname);\
+ if(r==\"\")r=\"0\";\
+ return parseInt(r);}\
+var Translations={\
+ \"Reload\":[\"Reload\",\"Neu Laden\"],\
+ \"Reload Now\":[\"Reload Now\",\"Jetzt neu Laden\"],\
+ \"ReloadTxt1\":[\"If You don`t have changed 'WifiMode' inside 'Configuration', You may simply Reload.\",\"Solange Du 'WifiMode' innerhalb 'Konfiguration' nicht geändert hast, kannst du einfach neu Laden.\"],\
+ \"ReloadTxt2\":[\"Reloading in \",\"Seite wird in \"],\
+ \"ReloadTxt3\":[\" seconds.\",\" Sekunden neu geladen.\"],\
+ \"FwUpdateNok\":[\"Firmware-Update failed!\",\"Firmware-Update fehlgeschlagen!\"],\
+ \"FwUpdateOk\":[\"Firmware-Update successfully, Rebooting...\",\"Firmware-Update erfolgreich, Neustart...\"]};\
+var LangNr=GetNrCookie(\"LNr\");\
+function Tr(name,defStr=\"\"){\
+ if(!Translations.hasOwnProperty(name))\
+  return defStr;\
+ let res=Translations[name][LangNr];\
+ if(res!==undefined)\
+  return res;\
+ res=Translations[name][0];\
+ if(res!==undefined)\
+   return res;\
+ return name;}\
+function ReloadCountdown(){\
+ var t=10;var x=setInterval(function(){--t;document.getElementById(\"ReloadTimeOut\").innerHTML=t;if(t<=0){clearInterval(x);location.replace(\"/Index.html\");}},1000);\
+ return `${Tr(\"ReloadTxt2\")}<span id=\"ReloadTimeOut\">10</span>${Tr(\"ReloadTxt3\")}<br><button onclick=location=\"/Index.html\">${Tr(\"Reload Now\")}</button>`;}\
+function Init(ok){\
+ const ok2Color=[\"red\",\"green\"];\
+ const ok2Txt=[\"FwUpdateNok\",\"FwUpdateOk\"];\
+ var e=document.getElementById(\"ResDiv\");\
+ e.innerHTML=`<font color=\"${ok2Color[ok]}\" style=\"font-size:2em;\"><strong>${Tr(ok2Txt[ok])}</strong></font><br>${Tr(\"ReloadTxt1\")}<br><button onclick=location=\"/Index.html\">${Tr(\"Reload\")}</button>ErrorTxtPos`;}\
+document.addEventListener(\"loaded\",Init(0));</script></html>";
 
 void TFeederWifi::SHandleFwUpdate(void)
  {
   // handler for the update form POST (once file upload finishes)
-  SSendPostResponce( !Update.hasError(), true );
+  //!SSendPostResponce( !Update.hasError(), true );
+  bool ok = !Update.hasError();
+  
+  String resStr( FwUpdatePostResponceStr );
+  String errorStr = "";
+  if( ok )
+   {
+    HttpServer.client().setNoDelay( true );
+    resStr.replace( "Init(0)", "Init(1)" );
+   }
+   else
+    errorStr = String( "<br>Error:" ) + FUpdaterError;
+  resStr.replace( "ErrorTxtPos", errorStr );
+
+  if( FUploadName == "filesystem" )
+    resStr.replace( "Firmware", "FileSystem" );
+  
+  HttpServer.send( 200, "text/html", resStr );
+  if( !ok )
+   {
+    LittleFS.begin();
+    return;
+   }
+  delay( 500 );
+  HttpServer.client().stop();
+  ESP.restart();  
  }
 
 void TFeederWifi::SFwUploader(void)
@@ -225,44 +310,53 @@ void TFeederWifi::SFwUploader(void)
   // handler for the file upload, gets the sketch bytes, and writes them through the Update object
   HTTPUpload & upload = HttpServer.upload();
 
+  //d Debug( "SFwUploader\n" );
+
   if( upload.status == UPLOAD_FILE_START )
    {
+    //d
+    //d Debug( " UPLOAD_FILE_START\n" );
+    //d Debug( " upload.name: %s\n", upload.name.c_str() );
+    //d Debug( " upload.contentLength: %x\n", upload.contentLength );
+
+    uint32_t maxFreeSpace = ( ESP.getFreeSketchSpace() - 0x1000 ) & 0xFFFFF000;
+    //d Debug( " maxFreeSpace: %x\n", maxFreeSpace );
+    //d Debug( " fsSize: %x\n", size_t( &_FS_end ) - size_t( &_FS_start ) );
+
     FUpdaterError.clear();
     WiFiUDP::stopAll();
-    #if 0
-      if( upload.name == "filesystem" )
-       {
-        size_t fsSize = size_t( &_FS_end ) - size_t( &_FS_start );
-        close_all_fs();
-        Update.begin( fsSize, U_FS ); // start with max available size
-       }
-       else 
-       {
-        uint32_t maxSketchSpace = ( ESP.getFreeSketchSpace() - 0x1000 ) & 0xFFFFF000;
-        Update.begin( maxSketchSpace, U_FLASH ); //start with max available size
-       }
-    #endif
-    if( upload.name == "filesystem" )
-      close_all_fs();
-    uint32_t maxSketchSpace = ( ESP.getFreeSketchSpace() - 0x1000 ) & 0xFFFFF000;
-    Update.begin( maxSketchSpace, upload.name == "filesystem" ? U_FS : U_FLASH ); //start with max available size
+
     FUploadName = upload.name;
+    if( FUploadName == "filesystem" )
+     {
+      close_all_fs();
+      Update.begin( maxFreeSpace, U_FS ); //start with max available size
+     }
+     else 
+     {
+      Update.begin( maxFreeSpace, U_FLASH ); //start with max available size
+     }
+  
    }
    else if( upload.status == UPLOAD_FILE_WRITE && !FUpdaterError.length() )
    {
+    //d Debug( " UPLOAD_FILE_WRITE\n" );
     if( Update.write( upload.buf, upload.currentSize ) != upload.currentSize )
       SetErrorFromUpdater();
    }
    else if( upload.status == UPLOAD_FILE_END && !FUpdaterError.length() )
    {
+    //d Debug( " UPLOAD_FILE_END\n" );
     if( !Update.end( true ) ) // true to set the size to the current progress
       SetErrorFromUpdater();
    }
    else if( upload.status == UPLOAD_FILE_ABORTED )
    {
+    //d Debug( " UPLOAD_FILE_ABORTED\n" );
     Update.end();
    }
   delay(0);
+  //yield();
  }
 
 #if 0
@@ -312,6 +406,7 @@ void TFeederWifi::SetErrorFromUpdater(void)
   StreamString str;
   Update.printError(str);
   FUpdaterError = str;
+  //d Debug( "SetErrorFromUpdater: %s\n", FUpdaterError.c_str() );
  }
 String TFeederWifi::FUpdaterError;
 String TFeederWifi::FUploadName;
