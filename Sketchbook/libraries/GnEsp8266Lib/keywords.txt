@@ -1,0 +1,29 @@
+# Syntax Coloring Map For GnEsp8266Lib
+
+# Datatypes (KEYWORD1)
+#CRC8	KEYWORD1
+
+# Methods and Functions (KEYWORD2)
+SetPinM	KEYWORD2
+SetPin	KEYWORD2
+ClrPinM	KEYWORD2
+ClrPin	KEYWORD2
+TogglePinM	KEYWORD2
+TogglePin	KEYWORD2
+GetOutPinM	KEYWORD2
+GetOutPin	KEYWORD2
+GetInPinM	KEYWORD2
+GetInPin	KEYWORD2
+
+PinMode_Output	KEYWORD2
+PinMode_OutputOpenDrain	KEYWORD2
+PinMode_Input	KEYWORD2
+PinMode_InputPullUp	KEYWORD2
+
+GetCycleCount	KEYWORD2
+
+# Instances (KEYWORD2)
+
+# Constants (LITERAL1)
+#CRC_LIB_VERSION	LITERAL1
+

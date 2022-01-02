@@ -1,0 +1,13 @@
+# Syntax Coloring Map For GnWifiKit8Lib
+
+# Datatypes (KEYWORD1)
+#CRC8	KEYWORD1
+
+# Methods and Functions (KEYWORD2)
+#crc8	KEYWORD2
+
+# Instances (KEYWORD2)
+
+# Constants (LITERAL1)
+#CRC_LIB_VERSION	LITERAL1
+

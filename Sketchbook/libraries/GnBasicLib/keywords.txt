@@ -1,0 +1,97 @@
+# Syntax Coloring Map For GnBasicLib
+
+#################################
+# Datatypes (KEYWORD1)
+#Key	KEYWORD1
+#################################
+
+# GnBasic
+uint_t	KEYWORD1
+
+# Closures
+TClosure	KEYWORD1
+
+# TGnCoopTimer
+TGnCoopTimerUs	KEYWORD1
+TGnCoopTimerMs	KEYWORD1
+TGnCoopTimerS	KEYWORD1
+
+# TGnCrc8
+TGnCrc8	KEYWORD1
+
+# GnRotEncoder
+TGnRotEncoder	KEYWORD1
+
+#################################
+# Methods and Functions (KEYWORD2)
+#Key	KEYWORD2
+#################################
+
+# GnBasic
+Restrict	KEYWORD2
+#TwoDigitStr	KEYWORD2
+#TimeString	KEYWORD2
+Loop	KEYWORD2
+
+# Closures
+Closure	KEYWORD2
+
+# TGnCoopTimer
+SetCb	KEYWORD2
+GetCb	KEYWORD2
+SetInterval	KEYWORD2
+GetInterval	KEYWORD2
+Enabled	KEYWORD2
+Start	KEYWORD2
+Stop	KEYWORD2
+Resume	KEYWORD2
+ReStart	KEYWORD2
+
+# TGnCrc8
+#Start	KEYWORD2
+Add	KEYWORD2
+GetCrc	KEYWORD2
+
+# GnRotEncoder
+Attach	KEYWORD2
+Detach	KEYWORD2
+Clear	KEYWORD2
+SetRotCb	KEYWORD2
+GetRotCb	KEYWORD2
+SetBtnCb	KEYWORD2
+GetBtnCb	KEYWORD2
+
+#################################
+# Instances (KEYWORD2)
+#Key	KEYWORD2
+#################################
+
+# GnBasic
+LoopInstances	KEYWORD2
+
+# Closures
+
+# TGnCoopTimer
+
+# TGnCrc8
+
+# GnRotEncoder
+GnRotEncoder	KEYWORD2
+
+#################################
+# Constants (LITERAL1)
+#Key	LITERAL1
+#################################
+
+# GnBasic
+
+# Closures
+
+# TGnCoopTimer
+
+# TGnCrc8
+
+# GnRotEncoder
+
+
+
