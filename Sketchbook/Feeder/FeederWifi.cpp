@@ -207,7 +207,7 @@ void TFeederWifi::SHandleMFeedChk(void)
  {
   if( !SChkPost( "MFeedChk" ) ) return;
   //d Debug( "MFeedChk\n" );
-  SSendPostResponce( FeederServo.Running(), false );
+  SSendPostResponce( !FeederServo.Running(), false );
  }
 
 void TFeederWifi::SHandleSetConfig(void)

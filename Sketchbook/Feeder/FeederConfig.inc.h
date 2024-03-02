@@ -34,7 +34,11 @@ CD( t, String,    ApSsid,       "Futterautomat_1"            )
 CD( p, String,    ApPw,         "Futterautomat_1"            )
 CD_Div( d )
 
-// Hostname: Used for Wlan & Ap
+// FTP: pw for FTP
+CD( p, String,    FtpPw,        ""                           )
+CD_Div( d )
+
+// Hostname: Used for Wlan, Ap & FTP
 CD( t, String,    Hostname,     "Feeder"                     )
 CD_Div( d )
 

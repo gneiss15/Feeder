@@ -1,6 +1,7 @@
 Feeding wird zufrüh als fertig bezeichnet (Servo meldet zu früh...)
-Screensaver !?!
-Speichern Feed-Times ?? funktioniert nicht
+
+x Screensaver !?!
+x Speichern Feed-Times ?? funktioniert nicht
 
 Menüs
 x Edit Wifi-Mode

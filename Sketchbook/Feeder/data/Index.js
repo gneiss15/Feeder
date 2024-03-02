@@ -149,13 +149,13 @@ function MFeed(){
 //*****************************
 //Config(Entries)
 function CD(type,name){
-  const type2Func={"c":MkCb,"t":MkTx,"p":MkPw,"n":MkNr,"e":MkMode};
-  if(type=="d")return MkRow('<th style="padding-top:15px;"></th>');
-  return MkRow(MkCell(name)+MkCell(type2Func[type](name)));}
+ const type2Func={"c":MkCb,"t":MkTx,"p":MkPw,"n":MkNr,"e":MkMode};
+ if(type=="d")return MkRow('<th style="padding-top:15px;"></th>');
+ return MkRow(MkCell(name)+MkCell(type2Func[type](name)));}
 function SetConfigEntries(data){
-  let res='';for(var key in data)res+=CD(data[key],key); 
-  document.getElementById("ConfigData").innerHTML=res;
-  GetJData('Config.json',SetConfigData);}
+ let res='';for(var key in data)res+=CD(data[key],key); 
+ document.getElementById("ConfigData").innerHTML=res;
+ GetJData('Config.json',SetConfigData);}
 function LoadConfig(){GetJData('ConfigEntries.json',SetConfigEntries);}  
 //*****************************
 //Config(data)
@@ -198,14 +198,14 @@ function FeedTimesOk(e){e.innerHTML=`${ResHeader(1,"FeedTimesOk")}${ReloadCountd
 function ConfigNok(e){e.innerHTML=`${ResHeader(0,"ConfigNok")}${ReloadCountdown()}`;}
 function ConfigOk(e){e.innerHTML=`${ResHeader(1,"ConfigOk")}${Tr("ReloadTxt1")}<br><button onclick=location="/Index.html">${Tr("Reload")}</button>`;}
 function ManualFeedNok(e){e.innerHTML=`${ResHeader(0,"ManualFeedNok")}${ReloadCountdown()}`;}
-function ManualFeedOk(e){setTimeout(function(){PostRequest(3,"/MFeedChk/");},5000);e.innerHTML=`${ResHeader(1,"ManualFeedOk",6)}`;}
-function MFeedChkActive(e){setTimeout(function(){PostRequest(3,"/MFeedChk/");},5000);}
+function ManualFeedOk(e){setTimeout(function(){PostRequest(3,"/MFeedChk/");},1000);e.innerHTML=`${ResHeader(1,"ManualFeedOk",6)}`;}
+function MFeedChkActive(e){setTimeout(function(){PostRequest(3,"/MFeedChk/");},1000);}
 function MFeedChkDone(e){e.innerHTML+=`<br><button onclick=location="/Index.html">${Tr("Done")}</button>`;}
 function SetStatus(func,ok){
  const funcTab=[[FeedTimesNok,FeedTimesOk],[ManualFeedNok,ManualFeedOk],[ConfigNok,ConfigOk],[MFeedChkActive,MFeedChkDone]];
- document.getElementById("MainDiv").style.display="none";
- document.getElementById("ResDiv").style.display="block";
  let ResDiv=document.getElementById("ResDiv");
+ document.getElementById("MainDiv").style.display="none";
+ ResDiv.style.display="block";
  let f=funcTab[func][ok];
  if(f) f(ResDiv);}
 //*****************************

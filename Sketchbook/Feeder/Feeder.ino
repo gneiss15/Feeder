@@ -17,10 +17,7 @@
 //? #define FtpServer GnFtpServer
 
 // Server-Type for Simple Ftp Server
-
-//? #define DEFAULT_FTP_SERVER_NETWORK_TYPE_ESP8266   NETWORK_ESP8266
-//? #define DEFAULT_STORAGE_TYPE_ESP8266 STORAGE_LITTLEFS
-//? #include <SimpleFTPServer.h>
+#include <SimpleFTPServer.h>
 
 //****************************************************************
 // Hw Configuration
@@ -57,7 +54,11 @@ BtnPin   14 // Button-Input-Pin from RotEncoder
 // Main
 //****************************************************************
 
-//? FtpServer ftpSrv;   //set #define FTP_DEBUG in ESP8266FtpServer.h to see ftp verbose on serial
+// #define FTP_CMD_PORT 21
+// #define FTP_DATA_PORT_PASV 50009
+// FtpServer( uint16_t _cmdPort = FTP_CMD_PORT, uint16_t _pasvPort = FTP_DATA_PORT_PASV );
+// set #define FTP_DEBUG in ESP8266FtpServer.h to see ftp verbose on serial
+FtpServer ftpSrv;   
 
 void setup(void)
  {
@@ -68,7 +69,7 @@ void setup(void)
   if( !fsMounted )
     Debug( "Can't mount LittleFS\n" );
    else
-    ftpSrv.begin( "esp8266","esp8266" );    //username, password for ftp.   (default 21, 50009 for PASV)
+    ftpSrv.begin( FeederConfig.Hostname.c_str(), FeederConfig.FtpPw.c_str() ); // Set username, password for ftp.
 
   #if 0 //d 
   if( fsMounted )
@@ -102,5 +103,5 @@ void setup(void)
 void loop(void)
  {
   LoopInstances.Loop();
-  //? ftpSrv.handleFTP();        //make sure in loop you call handleFTP()!!  
+  ftpSrv.handleFTP();        //make sure in loop you call handleFTP()!!  
  }
