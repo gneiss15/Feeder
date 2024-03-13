@@ -19,6 +19,9 @@ function PostRequest(func,uri,data="{}"){
  xhr.send(data);}
 function PostJRequest(func,uri,jdata){
  PostRequest(func,uri,JSON.stringify(jdata));}
+//Set Document-Title
+function ChangeTitle(newTitle){
+ document.title = newTitle;}
 //*****************************
 //change value of Cb
 function ChChg(ele){ele.value=ele.checked?1:0;}
@@ -26,7 +29,8 @@ function ChChg(ele){ele.value=ele.checked?1:0;}
 function MkCb(val){return `<input type="checkbox" value=${val} ${val?"checked ":""}onclick="ChChg(this)">`;}
 function MkTx(val,size=50){return `<input type=text size=${size}>`;}
 function MkPw(val,size=50){return `<input type=password size=${size}>`;}
-function MkNr(val){return `<input type=number min=0 max=15>`;}
+function MkPin(val){return `<input type=number min=0 max=15>`;}
+function MkNr(val,min_=0,max_=15){return `<input type=number min=${min_} max=${max_} value=${val}>`;}
 function MkLbl(txt){return `<label>${txt}:</label>`;}
 function MkSel(val){let r="";for(let i=1;i<=9;i++)r+=`<option${(val==i)?" selected":""}>${i}</option>`;return `<select>${r}</select>`;}	
 function MkMode(val){
@@ -69,7 +73,7 @@ function ElesDisNone(es){
 //*****************************
 //Tabbed View
 function MSelect(nr){
- const nr2Name=["Feedings","Config","Update"];
+ const nr2Name=["Feedings","Config","Update","ServoSteps"];
  document.getElementById("ResDiv").style.display="none";
  document.getElementById("MainDiv").style.display="block";
  ElesDisNone(document.getElementsByClassName("MenuSelectDiv"));
@@ -93,9 +97,11 @@ function SetTrData(data){
  document.getElementsByClassName("MenuDdDiv")[0].innerHTML=t;
  LRestore();}
 function LoadTranslations(){GetJData('Translations.json',SetTrData);}
-function Tr(name,defStr=""){
- if(!Translations.hasOwnProperty(name))
-   return defStr;
+function Tr(name,defStr=undefined){
+ if(!Translations.hasOwnProperty(name)){
+   if(defStr==undefined)
+     return name;
+   return defStr;}
  let res=Translations[name][LangNr];
  if(res!==undefined)
    return res;
@@ -134,22 +140,24 @@ function SetFeedings(data){
 function LoadFeedings(){GetJData('FeedTimes.json',SetFeedings);}
 //*****************************
 //FeedTimes(submit)
-function SubmitFeedings() {
+function SubmitFeedings(){
  const bit2Col=[3,4,5,6,7,8,9,1];
- let table = document.getElementById("FeedData");
+ let tab=document.getElementById("FeedData");
  let jdata=[];
- for(let r=0,row;row=table.rows[r];++r){
+ for(let r=0,row;(row=tab.rows[r]);++r){
   let bits=0;for(let b=0;b<8;++b)bits|=GetCellVal(row.cells[bit2Col[b]])<<b;
   jdata.push([GetCellVal(row.cells[2]),bits,GetCellIntVal(row.cells[10])]);}
  PostJRequest(0,"/SetFeedTimes/",jdata);}
 //*****************************
-//FeedTimes(OnManualFeed)
-function MFeed(){
+//FeedTimes(Buttons)
+function ManualFeed(){
   PostRequest(1,"/ManualFeed/");}
+function StopFeed(){
+  PostRequest(5,"/StopFeed/");}
 //*****************************
 //Config(Entries)
 function CD(type,name){
- const type2Func={"c":MkCb,"t":MkTx,"p":MkPw,"n":MkNr,"e":MkMode};
+ const type2Func={"c":MkCb,"t":MkTx,"p":MkPw,"n":MkPin,"e":MkMode};
  if(type=="d")return MkRow('<th style="padding-top:15px;"></th>');
  return MkRow(MkCell(name)+MkCell(type2Func[type](name)));}
 function SetConfigEntries(data){
@@ -160,15 +168,19 @@ function LoadConfig(){GetJData('ConfigEntries.json',SetConfigEntries);}
 //*****************************
 //Config(data)
 function SetConfigData(data){
- let table=document.getElementById("ConfigData");
- for(let r=0,row;row=table.rows[r];++r){
+ let tab=document.getElementById("ConfigData");
+ for(let r=0,row;(row=tab.rows[r]);++r){
   let key=CellGetStr(row.cells[0]);
-  if(key.length)SetEle(row.cells[1].firstChild,data[key]);}}
+  if(key.length){
+   SetEle(row.cells[1].firstChild,data[key]);
+   if(key=="Hostname")
+    ChangeTitle(data[key]);
+   }}}
 //*****************************
 //Config(submit)
 function SubmitConfig(event){
- let table=document.getElementById("ConfigData");
- let cfg={};for(let r=0,row;row=table.rows[r];++r){
+ let tab=document.getElementById("ConfigData");
+ let cfg={};for(let r=0,row;(row=tab.rows[r]);++r){
   let key=CellGetStr(row.cells[0]);
   if(key.length)cfg[key]=CellEleGetVal(row.cells[1]);}
  //Chk Config
@@ -186,6 +198,32 @@ function SubmitConfig(event){
    alert(Tr("ErrorTZ"));return;}}
  PostJRequest(2,"/SetConfig/",cfg);}
 //*****************************
+//ServoSteps(data)
+function MkServoStepsRow(row){
+ return MkRow(MkCell(MkNr(row[0],0,180))+MkCell(MkNr(row[1],20,3000))+MkCell(MkNr(row[2],0,10000)));}
+function SetServoSteps(data){
+ let res="";for(let r=0;r<data.length;++r)res+=MkServoStepsRow(data[r]);
+ document.getElementById("ServoStepData").innerHTML=res;}
+function LoadServoSteps(){GetJData('ServoSteps.json',SetServoSteps);}
+//*****************************
+//ServoSteps(submit)
+function SubmitServoSteps(){
+ let tab=document.getElementById("ServoStepData");
+ let jdata=[];
+ for(let r=0,row;(row=tab.rows[r]);++r){
+  jdata.push([GetCellVal(row.cells[0]),GetCellVal(row.cells[1]),GetCellVal(row.cells[2])]);}
+ PostJRequest(4,"/SetServoSteps/",jdata);}
+//*****************************
+//ServoSteps(Buttons)
+function AddServoStep(){
+ let res=document.getElementById("ServoStepData").innerHTML;
+ res+=MkServoStepsRow([0,0,0]);
+ document.getElementById("ServoStepData").innerHTML=res;}
+function RemoveServoStep(){
+ let tab=document.getElementById("ServoStepData");
+ let rowCnt=tab.rows.length;
+ tab.deleteRow(rowCnt-1);}
+//*****************************
 //ResDiv
 function ReloadCountdown(){
  var t=10;var x=setInterval(function(){--t;document.getElementById("ReloadTimeOut").innerHTML=t;if(t<=0){clearInterval(x);location.replace("/Index.html");}},1000);
@@ -199,10 +237,14 @@ function ConfigNok(e){e.innerHTML=`${ResHeader(0,"ConfigNok")}${ReloadCountdown(
 function ConfigOk(e){e.innerHTML=`${ResHeader(1,"ConfigOk")}${Tr("ReloadTxt1")}<br><button onclick=location="/Index.html">${Tr("Reload")}</button>`;}
 function ManualFeedNok(e){e.innerHTML=`${ResHeader(0,"ManualFeedNok")}${ReloadCountdown()}`;}
 function ManualFeedOk(e){setTimeout(function(){PostRequest(3,"/MFeedChk/");},1000);e.innerHTML=`${ResHeader(1,"ManualFeedOk",6)}`;}
+function StopFeedNok(e){e.innerHTML=`${ResHeader(0,"StopFeedNok")}${ReloadCountdown()}`;}
+function StopFeedOk(e){e.innerHTML=`${ResHeader(1,"StopFeedOk",6)}`;}
 function MFeedChkActive(e){setTimeout(function(){PostRequest(3,"/MFeedChk/");},1000);}
-function MFeedChkDone(e){e.innerHTML+=`<br><button onclick=location="/Index.html">${Tr("Done")}</button>`;}
+function MFeedChkDone(e){e.innerHTML+=`<br><button onclick=location="/Index.html">${Tr("ManualFeedDone")}</button>`;}
+function ServoStepsNok(e){e.innerHTML=`${ResHeader(0,"ServoStepsNok")}${ReloadCountdown()}`;}
+function ServoStepsOk(e){e.innerHTML=`${ResHeader(1,"ServoStepsOk")}${ReloadCountdown()}`;}
 function SetStatus(func,ok){
- const funcTab=[[FeedTimesNok,FeedTimesOk],[ManualFeedNok,ManualFeedOk],[ConfigNok,ConfigOk],[MFeedChkActive,MFeedChkDone]];
+ const funcTab=[[FeedTimesNok,FeedTimesOk],[ManualFeedNok,ManualFeedOk],[ConfigNok,ConfigOk],[MFeedChkActive,MFeedChkDone],[ServoStepsNok,ServoStepsOk],[StopFeedNok,StopFeedOk]];
  let ResDiv=document.getElementById("ResDiv");
  document.getElementById("MainDiv").style.display="none";
  ResDiv.style.display="block";
@@ -214,4 +256,6 @@ function FeederSetup(){
  LoadTranslations();
  LoadFeedings();
  LoadConfig();
- MRestore();}
+ LoadServoSteps();
+ MRestore();
+ }

@@ -29,7 +29,7 @@ TFeederConfig::TFeederConfig(void)
 
 bool TFeederConfig::Load( String const jsonStr )
  {
-  DynamicJsonDocument doc( 512 );
+  JsonDocument doc;
   DeserializationError error = deserializeJson( doc, jsonStr );
   //D Debug( "TFeederConfig::Load: %s\njson: %s<<<\n", error.c_str(), jsonStr.c_str() );
   if( error != DeserializationError::Ok ) // if( error ) ???
@@ -41,8 +41,7 @@ bool TFeederConfig::Load( String const jsonStr )
 
 bool TFeederConfig::Save(void)
  {
-  //StaticJsonDocument<512> doc;
-  DynamicJsonDocument doc( 512 );
+  JsonDocument doc;
   #define CD( htmlType, typ, name, defValue ) doc[ #name ] = FConfig.name;
   #include "FeederConfig.inc.h"
 

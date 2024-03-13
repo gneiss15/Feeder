@@ -16,7 +16,7 @@
 
 TFeedTimes::TFeedTimes(void)
  {
-  ClrVar( FNvData.FeedRecords );
+  ClrVar( FFeedTimesNvData.FeedRecords );
   Load( ReadFile( F( "/FeedTimes.json" ) ) );
  }
 
@@ -25,7 +25,7 @@ void TFeedTimes::SetTimeString( uint8_t r, String argVal )
   argVal.trim();
   if( argVal.length() != 5 )
     return;
-  TFeedRecord & fr = FNvData.FeedRecords[ r ];
+  TFeedRecord & fr = FFeedTimesNvData.FeedRecords[ r ];
   fr.h = argVal.substring( 0, 2 ).toInt();
   fr.m = argVal.substring( 3, 5 ).toInt();
   //D Debug( "TFeedTimes::SetTimeString: r:%u, argVal:%s, h-str:%s, m-str:%s, h:%u, m:%u\n", r, argVal.c_str(), argVal.substring( 0, 2 ).c_str(), argVal.substring( 3, 5 ).c_str(), fr.h, fr.m );
@@ -35,7 +35,7 @@ uint8_t TFeedTimes::CheckTime( struct tm const & tm )
  {
   for( int r = 0;  r < MaxFeedRecords;  ++r )
    {
-    TFeedRecord & fr = FNvData.FeedRecords[ r ];
+    TFeedRecord & fr = FFeedTimesNvData.FeedRecords[ r ];
     if( ( fr.wday.mask &  0x80 )                    // active ?
      && ( fr.wday.mask & ( 1 << tm.tm_wday ) )      // active for this wday ?
      && fr.h == tm.tm_hour && fr.m  == tm.tm_min )  // Time Equal ?
@@ -46,7 +46,7 @@ uint8_t TFeedTimes::CheckTime( struct tm const & tm )
 
 bool TFeedTimes::Load( String const & jsonStr )
  {
-  DynamicJsonDocument doc( 768 );
+  JsonDocument doc;
   DeserializationError error = deserializeJson( doc, jsonStr );
   //D Debug( "TFeedTimes::Load: %s, bool:%s\njson: %s<<<\n", error ? "NOK" : "OK", error.c_str(), jsonStr.c_str() );
   if( error != DeserializationError::Ok ) // if( error ) ???
@@ -55,7 +55,7 @@ bool TFeedTimes::Load( String const & jsonStr )
   uint8_t r = 0;
   for( JsonVariant value : arr )
    {
-    TFeedRecord & fr = FNvData.FeedRecords[ r ];
+    TFeedRecord & fr = FFeedTimesNvData.FeedRecords[ r ];
     JsonArray row = value;
     SetTimeString( r++, row[ 0 ].as<String>() );
     fr.wday.mask = row[ 1 ].as<uint8_t>();
@@ -66,12 +66,12 @@ bool TFeedTimes::Load( String const & jsonStr )
 
 bool TFeedTimes::Save(void)
  {
-  DynamicJsonDocument doc( 768 );
+  JsonDocument doc;
   JsonArray arr = doc.to<JsonArray>();;
   for( uint8_t r = 0;  r < MaxFeedRecords;  ++r )
    {
-    JsonArray row = arr.createNestedArray();
-    TFeedRecord & fr = FNvData.FeedRecords[ r ];
+    JsonArray row = arr.add<JsonArray>();
+    TFeedRecord & fr = FFeedTimesNvData.FeedRecords[ r ];
     row.add( TimeString( fr.h, fr.m ) );
     row.add( fr.wday.mask );
     row.add( fr.portions );
@@ -106,7 +106,7 @@ void TFeedTimes::Loop(void)
     Debug( "TFeedTimes::Loop every min\n" );
     uint8_t portions = CheckTime( tm );
     if( portions > 0 )
-      FeederServo.Start( ServoDefault_MinPulseWidthUs, ServoDefault_MaxPulseWidthUs, portions );
+      FeederServo.Feed( portions );
    }
   tmLast = tm;
  }

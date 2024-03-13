@@ -52,7 +52,7 @@ typedef union
  {
   TFeedRecord         FeedRecords[ MaxFeedRecords ];
  }
- TNvData;
+ TFeedTimesNvData;
 
 //****************************************************************
 // TFeedTimes
@@ -64,7 +64,7 @@ class TFeedTimes : public TSingleton<TFeedTimes>, TLoopInstance
  private:
                       TFeedTimes(void);
  private:
-  TNvData             FNvData;
+  TFeedTimesNvData    FFeedTimesNvData;
 
  private:
                       // Set FeedTime( r ) .h & .m to argVal ("hh:mm")

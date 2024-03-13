@@ -49,8 +49,10 @@ class TFeederWifi : public TSingleton<TFeederWifi>, TLoopInstance
 
   static void         SHandleSetFeedTimes(void);
   static void         SHandleManualFeed(void);
+  static void         SHandleStopFeed(void);
   static void         SHandleMFeedChk(void);
   static void         SHandleSetConfig(void);
+  static void         SHandleSetServoSteps(void);
   static void         SHandleFwUpdate(void);
   static void         SFwUploader(void);
 

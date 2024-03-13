@@ -1,7 +1,7 @@
 {
  "Lang" : ["EN","DE"],
+
  "Feedings" : ["Feedings","Fütterungen"],
- "Configuration" : ["Configuration","Konfiguration"],
  "Feed-Times" : ["Feed-Times","Fütterzeiten"],
  "Active" : ["Active","Aktiv"],
  "Time" : ["Time","Zeit"],
@@ -16,23 +16,33 @@
  "Save" : ["Save","Speichern"],
  "Reset" : ["Reset","Rücksetzen"],
  "Manual Feed" : ["Manual Feed","Manuelle Fütterung"],
+ "Stop Feed" : ["Stop Feed","Fütterung Stoppen"],
+ "FeedTimesNok" : ["Changing Feed-Times failed!","Änderung der Fütterzeiten fehlgeschlagen!"],
+ "FeedTimesOk" : ["Feed-Times changed","Fütterzeiten geändert"],
+ "ManualFeedNok" : ["Manual-Feed failed!","Manuelle Fütterung fehlgeschlagen!"],
+ "ManualFeedOk" : ["Feeding...","Fütterung..."],
+ "ManualFeedDone" : ["Done","Fertig"],
+ "ServoStepsNok" : ["Changing Servo-Steps failed!","Änderung der Servo-Steps fehlgeschlagen!"],
+ "ServoStepsOk" : ["Servo-Steps changed","Servo-Steps geändert"],
+
  "Configuration" : ["Configuration","Konfiguration"],
+ "ConfigNok" : ["Changing Configuration failed!","Änderung der Konfiguration fehlgeschlagen!"],
+ "ConfigOk" : ["Config changed, Rebooting...","Konfiguration geändert, Neustart..."],
  "Reload" : ["Reload","Neu Laden"],
  "Reload Now" : ["Reload Now","Jetzt neu Laden"],
  "ReloadTxt1" : ["If You don`t have changed 'WifiMode' inside 'Configuration', You may simply Reload.","Solange Du 'WifiMode' innerhalb 'Konfiguration' nicht geändert hast, kannst du einfach neu Laden."],
  "ReloadTxt2" : ["Reloading in ","Seite wird in "],
  "ReloadTxt3" : [" seconds."," Sekunden neu geladen."],
- "FeedTimesNok" : ["Changing Feed-Times failed!","Änderung der Fütterzeiten fehlgeschlagen!"],
- "FeedTimesOk" : ["Feed-Times changed","Fütterzeiten geändert"],
- "ConfigNok" : ["Changing Configuration failed!","Änderung der Konfiguration fehlgeschlagen!"],
- "ConfigOk" : ["Config changed, Rebooting...","Konfiguration geändert, Neustart..."],
- "ManualFeedNok" : ["Manual-Feed failed!","Manuelle Fütterung fehlgeschlagen!"],
- "ManualFeedOk" : ["Feeding...","Fütterung..."],
- "Done" : ["Done","Fertig"],
+
  "ErrorApPw" : ["Error:\nAccess-Point password must be either:\n- at least 8 characters long\nor\n- empty for an open/unsecure WLAN (not recommended)", 
                 "Fehler:\nAccess-Point-Passwort muss entweder sein:\n- Mindestens 8 Zeichen lang\noder\n- leer für ein offenes/unsicheres WLAN (nicht empfohlen)"],
  "ErrorApSsid" : ["Error:\nIf an access point password is specified, an access point SSID must also be specified","Fehler:\nWenn ein Access-Point-Passwort angegeben wird, muss auch eine Access-Point-SSID angegeben werden"],
  "ErrorWlanSsid" : [ "Error:\nWLAN SSID must be specified if station mode is activated", "Fehler:\nWLAN-SSID muss angegeben werden, wenn der Station-Modus aktivieren ist"],
  "ErrorNtpServer" : ["Error:\nNtpServer-Address must be specified if station mode is activated","Fehler:\nNtpServer-Adresse muss angegeben werden, wenn der Station-Modus aktiviert ist"],
- "ErrorTZ" : ["Error:\nTime-Zone must be specified if station mode is activated","Fehler:\nZeitzone muss angegeben werden, wenn der Station-Modus aktiviert ist"]
+ "ErrorTZ" : ["Error:\nTime-Zone must be specified if station mode is activated","Fehler:\nZeitzone muss angegeben werden, wenn der Station-Modus aktiviert ist"],
+
+ "ServoSteps" : ["ServoSteps","ServoSchritte"],
+ "Servo-Steps" : ["Servo-Steps","Servo-Schritte"],
+ 
+ "Last_Entry_No_Comma!" : ["",""]
 }

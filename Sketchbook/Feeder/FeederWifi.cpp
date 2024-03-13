@@ -87,7 +87,7 @@ bool TFeederWifi::STimeIsValid = false;
 
 void TFeederWifi::STimeIsSet_cb(void)
  {
-  //d Debug( "TFeederWifi::STimeIsSet_cb\n" );
+  //D Debug( "TFeederWifi::STimeIsSet_cb\n" );
   if( TFeederWifi::STimeIsValid )
     return;
   TFeederWifi::STimeIsValid = true;
@@ -137,7 +137,7 @@ uint32_t sntp_update_delay_MS_rfc_not_less_than_15000( void )
 #if 0
 void TFeederWifi::SHandle....(void)
  {
-  #if 0 //d Debug/language
+  #if 0 //D Debug/language
     if( HttpServer.hasHeader( "accept-language" ) )
      {
       // de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7
@@ -191,30 +191,44 @@ bool TFeederWifi::SChkPost( String postName )
 
 void TFeederWifi::SHandleSetFeedTimes(void)
  {
-  if( !SChkPost( "FeedTimes" ) ) return;
-  //d Debug( "FeedTimes: plain: %s\n", HttpServer.arg( "plain" ).c_str() );
+  if( !SChkPost( "SetFeedTimes" ) ) return;
+  //D Debug( "FeedTimes: plain: %s\n", HttpServer.arg( "plain" ).c_str() );
   SSendPostResponce( FeedTimes.Set( HttpServer.arg( "plain" ) ), false );
  }
 
 void TFeederWifi::SHandleManualFeed(void)
  {
   if( !SChkPost( "ManualFeed" ) ) return;
-  //d Debug( "ManualFeed\n" );
-  SSendPostResponce( FeederServo.StartOneFeed(), false );
+  //D Debug( "ManualFeed\n" );
+  SSendPostResponce( FeederServo.Feed(), false );
+ }
+
+void TFeederWifi::SHandleStopFeed(void)
+ {
+  if( !SChkPost( "StopFeed" ) ) return;
+  //D Debug( "StopFeed\n" );
+  SSendPostResponce( FeederServo.Stop(), false );
  }
 
 void TFeederWifi::SHandleMFeedChk(void)
  {
   if( !SChkPost( "MFeedChk" ) ) return;
-  //d Debug( "MFeedChk\n" );
+  //D Debug( "MFeedChk\n" );
   SSendPostResponce( !FeederServo.Running(), false );
  }
 
 void TFeederWifi::SHandleSetConfig(void)
  {
   if( !SChkPost( "Config" ) ) return;
-  //d Debug( "Config: plain: %s\n", HttpServer.arg( "plain" ).c_str() );
+  //D Debug( "Config: plain: %s\n", HttpServer.arg( "plain" ).c_str() );
   SSendPostResponce( FeederConfigInstance.Set( HttpServer.arg( "plain" ) ), true );
+ }
+
+void TFeederWifi::SHandleSetServoSteps(void)
+ {
+  if( !SChkPost( "SetServoSteps" ) ) return;
+  //D Debug( "SetServoSteps: plain: %s\n", HttpServer.arg( "plain" ).c_str() );
+  SSendPostResponce( FeederServo.Set( HttpServer.arg( "plain" ) ), false );
  }
 
 const String FwUpdatePostResponceStr = "<!DOCTYPE html>\
@@ -310,18 +324,17 @@ void TFeederWifi::SFwUploader(void)
   // handler for the file upload, gets the sketch bytes, and writes them through the Update object
   HTTPUpload & upload = HttpServer.upload();
 
-  //d Debug( "SFwUploader\n" );
+  //D Debug( "SFwUploader\n" );
 
   if( upload.status == UPLOAD_FILE_START )
    {
-    //d
-    //d Debug( " UPLOAD_FILE_START\n" );
-    //d Debug( " upload.name: %s\n", upload.name.c_str() );
-    //d Debug( " upload.contentLength: %x\n", upload.contentLength );
+    //D Debug( " UPLOAD_FILE_START\n" );
+    //D Debug( " upload.name: %s\n", upload.name.c_str() );
+    //D Debug( " upload.contentLength: %x\n", upload.contentLength );
 
     uint32_t maxFreeSpace = ( ESP.getFreeSketchSpace() - 0x1000 ) & 0xFFFFF000;
-    //d Debug( " maxFreeSpace: %x\n", maxFreeSpace );
-    //d Debug( " fsSize: %x\n", size_t( &_FS_end ) - size_t( &_FS_start ) );
+    //D Debug( " maxFreeSpace: %x\n", maxFreeSpace );
+    //D Debug( " fsSize: %x\n", size_t( &_FS_end ) - size_t( &_FS_start ) );
 
     FUpdaterError.clear();
     WiFiUDP::stopAll();
@@ -340,19 +353,19 @@ void TFeederWifi::SFwUploader(void)
    }
    else if( upload.status == UPLOAD_FILE_WRITE && !FUpdaterError.length() )
    {
-    //d Debug( " UPLOAD_FILE_WRITE\n" );
+    //D Debug( " UPLOAD_FILE_WRITE\n" );
     if( Update.write( upload.buf, upload.currentSize ) != upload.currentSize )
       SetErrorFromUpdater();
    }
    else if( upload.status == UPLOAD_FILE_END && !FUpdaterError.length() )
    {
-    //d Debug( " UPLOAD_FILE_END\n" );
+    //D Debug( " UPLOAD_FILE_END\n" );
     if( !Update.end( true ) ) // true to set the size to the current progress
       SetErrorFromUpdater();
    }
    else if( upload.status == UPLOAD_FILE_ABORTED )
    {
-    //d Debug( " UPLOAD_FILE_ABORTED\n" );
+    //D Debug( " UPLOAD_FILE_ABORTED\n" );
     Update.end();
    }
   delay(0);
@@ -387,8 +400,10 @@ bool TFeederWifi::SetupHttpServer(void)
   // Setup a server.on for dynamic generated answers
   FHttpServer.on( "/SetFeedTimes/", HTTP_POST, SHandleSetFeedTimes ); 
   FHttpServer.on( "/ManualFeed/", HTTP_POST, SHandleManualFeed ); 
+  FHttpServer.on( "/StopFeed/", HTTP_POST, SHandleStopFeed ); 
   FHttpServer.on( "/MFeedChk/", HTTP_POST, SHandleMFeedChk ); 
   FHttpServer.on( "/SetConfig/", HTTP_POST, SHandleSetConfig ); 
+  FHttpServer.on( "/SetServoSteps/", HTTP_POST, SHandleSetServoSteps ); 
   FHttpServer.on( "/FwUpdate/", HTTP_POST, SHandleFwUpdate, SFwUploader ); 
 
   // For getting accept-language (only when language select by this...
@@ -406,7 +421,7 @@ void TFeederWifi::SetErrorFromUpdater(void)
   StreamString str;
   Update.printError(str);
   FUpdaterError = str;
-  //d Debug( "SetErrorFromUpdater: %s\n", FUpdaterError.c_str() );
+  //D Debug( "SetErrorFromUpdater: %s\n", FUpdaterError.c_str() );
  }
 String TFeederWifi::FUpdaterError;
 String TFeederWifi::FUploadName;

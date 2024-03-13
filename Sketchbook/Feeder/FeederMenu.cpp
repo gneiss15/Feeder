@@ -133,7 +133,7 @@ void TFeederStatusMenu::ModeChgPerform(void)
   if( key != 'D' )
     return false;
   if( !FeederServo.Running() )
-    FeederServo.StartOneFeed();
+    FeederServo.Feed();
   return true;
  }
 

@@ -8,6 +8,8 @@ div {
  border:1px solid #000;
  */
 }
+input[type=number] {text-align: right;}
+
 .MenuSelectDiv {
  display:none;
  padding:6px 12px;
@@ -82,7 +84,7 @@ table {
  margin-right:auto;
  border-collapse:collapse;
 }
-#Feedings table {
+#Feedings table, #ServoSteps table {
  text-align:center;
 }
 #Config table {
@@ -95,19 +97,19 @@ table {
  font-weight:bold;
 }
 
-#Feedings th, #Feedings td {
+#Feedings th, #Feedings td, #ServoSteps, #ServoSteps td {
  border:1px solid black;
 }
-#Feedings tr:nth-child(even) {
+#Feedings tr:nth-child(even), #ServoSteps tr:nth-child(even) {
  background-color:#f2f2f2;
 }
-#Feedings th {
+#Feedings th, #ServoSteps th {
  padding-top:10px;
  background-color:#04AA6D;
  color:white;
  min-width:30px;
 }
-#Feedings tfoot th {
+#Feedings tfoot th, #ServoSteps tfoot th {
  border:0px;
  background-color:white;
  padding-top:10px;

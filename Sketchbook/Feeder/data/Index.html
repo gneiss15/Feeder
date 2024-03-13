@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html;charset=UTF-8">
+<title>Feeder</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="icon" type="image/png" href="/fish.png">
 <link rel="stylesheet" href="Index.css">
@@ -31,6 +32,11 @@
    <li class="MenuLi">
     <a class="MenuA" id="MConfig" onclick="MSelect(1)">
      <span name='Configuration'></span>
+    </a>
+   </li>
+   <li class="MenuLi">
+    <a class="MenuA" id="MServoSteps" onclick="MSelect(3)">
+     <span name='ServoSteps'>xxx</span>
     </a>
    </li>
    <li class="MenuLi"><a class="MenuA" id="MUpdate" onclick="MSelect(2)">Fw-Update</a></li>
@@ -71,7 +77,8 @@
     </tr>
     <tr>
      <th colspan=11>
-       <button onClick="MFeed()" style="float:center"><span name='Manual Feed'></span></button>
+       <button onClick="ManualFeed()" style="float:center"><span name='Manual Feed'></span></button>
+       <button onClick="StopFeed()" style="float:center"><span name='Stop Feed'></span></button>
      </th>
     </tr>
    <tbody id="FeedData">
@@ -95,6 +102,29 @@
  </div>
  <!-- /Config -->
  
+ <!-- ServoSteps -->
+ <div id="ServoSteps" class="MenuSelectDiv">
+  <table>
+   <thead><caption><h1><span name='Servo-Steps'></span></h1></caption>
+    <tr>
+     <th><span name="Position">Position<br>[0...180°]</span></th>
+     <th><span name="Speed">Speed (Time for full Turn)<br>[20...3000ms]</span></th>
+     <th><span name="Hold">Hold Time after Position reached<br>[0...10000ms]</span></th>
+    </tr>
+   <tfoot>
+    <tr>
+     <th colspan=3>
+      <button onClick="SubmitServoSteps()" style="float:left;margin-left:20px;;margin-right:50px"><span name='Save'></span></button>
+      <button onClick="AddServoStep()" style="float:left;margin-left:20px;;margin-right:50px"><span name='+'>+</span></button>
+      <button onClick="RemoveServoStep()" style="float:left;margin-left:20px;;margin-right:50px"><span name='-'>-</span></button>
+      <button onClick="LoadServoSteps()" style="float:right;margin-right:20px;"><span name='Reset'></span></button>
+     </th>
+    </tr>
+   <tbody id="ServoStepData">
+  </table>
+ </div>
+ <!-- /ServoSteps -->
+
  <!-- Update -->
  <div id="Update" class="MenuSelectDiv">
   <form method='POST' enctype='multipart/form-data' action='/FwUpdate/'>

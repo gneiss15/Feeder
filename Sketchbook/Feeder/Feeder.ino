@@ -5,7 +5,15 @@
 #include <LittleFS.h>
 
 #include "FeederConfig.h"
+/*
+#error Check Hw-PWM
+#https://espressif-docs.readthedocs-hosted.com/projects/arduino-esp32/en/latest/api/ledc.html
+#	ledc... uses Hardware PWM !!
+#https://deepbluembedded.com/high-resolution-pwm-using-ccp-compare-and-timer-module/
+#https://dronebotworkshop.com/esp32-servo/
+*/
 #include "FeederServo.h"
+
 #include "FeederWifi.h"
 #include "FeedTimes.h"
 
@@ -26,21 +34,21 @@
 /******************************************
                Wireing
 
-Servo   RotEnc  +++-WifiKit8-+++   Farbe
-                     gpio
-------+-------+-----------------+-------
-GND   |       | GND         GND | schwarz
-5V    |       | 5V          5V  | weiß
-      |  3V3  | 3V3         3V3 | rot
-      |  GND  | GND         GND | braun
-      |       | D2    4     CTS |
-PWM   |       | D3    0     DTR | grau
-      |       | D8   15  5  D1  |
-      |  Dt   | D7   13  1  TX  | gelb
-      |  Clk  | D6   12  3  RX  | grün
-      |  Sw   | SCL  14     RST | orange
-      |       | D0   16  2  SDA |
-      |       | A0          EN  |
+Servo        RotEnc  +++-WifiKit8-+++   Farbe
+                          gpio
+-----------+-------+-----------------+-------
+GND/braun  |       | GND         GND | schwarz
+5V/rot     |       | 5V          5V  | weiß
+           |  3V3  | 3V3         3V3 | rot
+           |  GND  | GND         GND | braun
+           |       | D2    4     CTS |
+PWM/orange |       | D3    0     DTR | grau
+           |       | D8   15  5  D1  |
+           |  Dt   | D7   13  1  TX  | gelb
+           |  Clk  | D6   12  3  RX  | grün
+           |  Sw   | SCL  14     RST | orange
+           |       | D0   16  2  SDA |
+           |       | A0          EN  |
 ******************************************/
 
 /* Pins are defined in FeederConfig!
@@ -71,7 +79,7 @@ void setup(void)
    else
     ftpSrv.begin( FeederConfig.Hostname.c_str(), FeederConfig.FtpPw.c_str() ); // Set username, password for ftp.
 
-  #if 0 //d 
+  #if 0 //D 
   if( fsMounted )
    {
     struct FSInfo fs_info;
@@ -97,7 +105,7 @@ void setup(void)
 
   FeedTimes.Setup();
   FeederWifi.Setup();
-  FeederServo.Attach( FeederConfig.ServoPin );
+  FeederServo.Setup();
  }
 
 void loop(void)

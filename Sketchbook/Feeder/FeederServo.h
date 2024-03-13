@@ -10,17 +10,34 @@
 #include <GnEsp8266Basics.h>
 
 //****************************************************************
+// typedefs
+//****************************************************************
+
+typedef struct _TServoStep
+ {
+  int32_t  soll_Clks;
+  int32_t  speed_Clks;
+  int32_t  hold_Counts;
+ }
+ TServoStep;
+ 
+typedef struct _TJsonServoStep
+ {
+  double    position_Grad;
+  uint32_t  speed_ms;
+  uint32_t  hold_ms;
+ }
+ TJsonServoStep;
+
+//****************************************************************
 // Sw Configuration
 //****************************************************************
 
-        // All Values in µs
-#define ServoDefault_MinPulseWidthUs     500   //  500µs = linker  Anschlag
-#define ServoDefault_MaxPulseWidthUs    2500   // 2500µs = rechter Anschlag
-#define ServoDefault_MidPulseWidthUs    1500   // 1500µs = Mittelstellung
-#define ServoDefault_PeriodUs          20000   // 20000us
+#define Servo_MinPw_us             500   //  500µs = linker  Anschlag = 0°
+#define Servo_MaxPw_us            2500   // 2500µs = rechter Anschlag = 180°
+#define Servo_Period_us          20000   // 20000us
 
-#define ServoDefault_FullTurnMs         3000   // Angleichung von Soll- und Ist-Wert, so das eine volle Drehbewegung 3s dauert
-#define ServoDefault_HoldTimeMs         1000   // Nach Angleichung noch 1s lang den Soll-Puls ausgeben
+#define Servo_FullTurn_Grad        180.
 
 //****************************************************************
 // TFeederServo
@@ -32,46 +49,60 @@ class TFeederServo : public TSingleton<TFeederServo>
  private:
                       TFeederServo
                        (
-                        int fullTurnMs = ServoDefault_FullTurnMs,             // ms für eine volle Drehbewegung
-                        int holdTimeMs = ServoDefault_HoldTimeMs,             // ms die das Soll-Signal weiter ausgegeben wird, wenn der Sollwert erreicht wurde
-                        int periodUs = ServoDefault_PeriodUs,                 // Periodendauer des Servo-Signals (20ms)
-                        int actPulseWidthUs = ServoDefault_MaxPulseWidthUs,   // (angenommene) Start Servo-Stellung
-                        int minPulseWidthUs = ServoDefault_MinPulseWidthUs, 
-                        int maxPulseWidthUs = ServoDefault_MaxPulseWidthUs
+                        int32_t periodUs = Servo_Period_us,         // Periodendauer des Servo-Signals (20ms)
+                        int32_t minPulseWidthUs = Servo_MinPw_us, 
+                        int32_t maxPulseWidthUs = Servo_MaxPw_us
                        );
-                      ~TFeederServo(void) { Detach(); }
+                      ~TFeederServo(void);
+
+ private:
+  int32_t             Position_Grad2Soll_Clks( double position_Grad );
+  int32_t             Speed_ms2Speed_Clks( uint32_t speed_ms );
+  int32_t             Hold_ms2Hold_Counts( uint32_t hold_ms );
+
+  double              Soll_Clks2Position_Grad( int32_t soll_Clks );
+  uint32_t            Speed_Clks2Speed_ms( int32_t speed_Clks );
+  uint32_t            Hold_Counts2Hold_ms( int32_t hold_Counts );
+
+  bool                Save(void);
+  bool                Load( String const & jsonStr );
+
+ private: // initialised in constructor
+  bool                FRunning;
+  int                 FPinNr;
+
+  int32_t             FPeriodClks;
+  int32_t             FMinPulseWidthClks;
+  int32_t             FMaxPulseWidthClks;
+  int32_t             FActPulseWidthClks;
+                      // helper vars for faster calculation
+  int32_t             FdPulseWidthClks;
+  int32_t             FdPulseWidthClks_Mul_PeriodClks;
+
+  TServoStep *        FServoSteps;
 
  private: // internal use only
-  bool                FRunning;
   int16_t             FPinMask;
-  int                 FHoldCounter;
-  int                 FNextLoadValueClks;
+  TServoStep const *  FActStep;
+  int32_t             FNextLoadValueClks;
+  int32_t             FHoldCounter;
+  int32_t             FRepeats;
 
- private: // Used in ISR, set via methods
-  int                 FSetPulseWidthClks;
+  int32_t             FPwmCycles;
 
-  int                 FPinNr;
-  int                 FPeriodClks;
-  int                 FChangeSpeedClks;
-  int                 FHoldCycles;
-  int                 FActPulseWidthClks;
-  int                 FMinPulseWidthClks;
-  int                 FMaxPulseWidthClks;
-
-  int                 FSetPulseWidthClkArray[ 2 ];
-  int                 FRepeats;
-
-  static IRAM_ATTR
-    void              FeederServoIrq(void);
-  
  public:
   bool                Running(void);
-
+  bool                Set( String const & jsonStr )               { return Load( jsonStr ) && Save(); }
+                      // setup & load data
+  void                Setup(void);
   bool                Attach( int pinNr );
   void                Detach(void);
-  
-  bool                Start( int firstSetPulseWidthUs, int secondSetPulseWidthUs = -1, int repeats = 0 );
-  bool                StartOneFeed(void) { return Start( ServoDefault_MinPulseWidthUs, ServoDefault_MaxPulseWidthUs, 1 ); }
+  bool                Feed( int32_t repeats = 1 );
+  bool                Stop(void);
+
+ private:
+  static IRAM_ATTR
+    void              FeederServoIrq(void);
  };
 
 #define FeederServo TFeederServo::Instance()
