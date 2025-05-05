@@ -25,21 +25,23 @@ function ChangeTitle(newTitle){
 //*****************************
 //change value of Cb
 function ChChg(ele){ele.value=ele.checked?1:0;}
-//Make DOM Elements
+//Make DOM Elements (with Value)
 function MkCb(val){return `<input type="checkbox" value=${val} ${val?"checked ":""}onclick="ChChg(this)">`;}
-function MkTx(val,size=50){return `<input type=text size=${size}>`;}
-function MkPw(val,size=50){return `<input type=password size=${size}>`;}
-function MkPin(val){return `<input type=number min=0 max=15>`;}
-function MkNr(val,min_=0,max_=15){return `<input type=number min=${min_} max=${max_} value=${val}>`;}
-function MkLbl(txt){return `<label>${txt}:</label>`;}
 function MkSel(val){let r="";for(let i=1;i<=9;i++)r+=`<option${(val==i)?" selected":""}>${i}</option>`;return `<select>${r}</select>`;}	
-function MkMode(val){
- const nr2Name=["Station","Accesspoint","Station + Accesspoint"];
- let r="";for(let i=1;i<=3;i++)r+=`<option value=${i}${(val==i)?" selected":""}>${nr2Name[i-1]}</option>`;
- return `<select>${r}</select>`;}	
 function MkTm(val){return `<input type="time" value="${val}">`;}
-function MkCell(inner){return `<td>${inner}</td>`;}
-function MkRow(inner,id='undefined'){return `<tr${id=="undefined"?"":" id=${id}"}>${inner}</td>`;}
+//Make DOM Elements
+function MkTxt(){return `<input type=text>`;}
+function MkPw(){return `<input type=password>`;}
+function MkNr(min_,max_,val){return `<input type=number${min_==undefined?"":` min=${min_}`}${max_==undefined?"":` max=${max_}`}${val==undefined?"":` value=${val}`}>`;}
+function MkPin(){return MkNr(0,15);}
+function MkPercent(){return MkNr(0,100);}
+function MkUint(){return MkNr(0,10000);}
+function MkMode(){
+ const nr2Name=["Station","Accesspoint","Station + Accesspoint"];
+ let r="";for(let i=1;i<=3;i++)r+=`<option value=${i}>${nr2Name[i-1]}</option>`;
+ return `<select>${r}</select>`;}	
+function MkCell(inner,extra=""){return `<td>${inner}${extra!=""?" ":""}${extra}</td>`;}
+function MkRow(inner,id){return `<tr${id==undefined?"":" id=${id}"}>${inner}</tr>`;}
 //Get Value of DOM Elements
 function GetCellVal(cell){return cell.firstChild.value;}
 function GetCellIntVal(cell){return parseInt(GetCellVal(cell));}
@@ -73,7 +75,7 @@ function ElesDisNone(es){
 //*****************************
 //Tabbed View
 function MSelect(nr){
- const nr2Name=["Feedings","Config","Update","ServoSteps"];
+ const nr2Name=["Feedings","Config","ServoSteps","Update"];
  document.getElementById("ResDiv").style.display="none";
  document.getElementById("MainDiv").style.display="block";
  ElesDisNone(document.getElementsByClassName("MenuSelectDiv"));
@@ -97,7 +99,7 @@ function SetTrData(data){
  document.getElementsByClassName("MenuDdDiv")[0].innerHTML=t;
  LRestore();}
 function LoadTranslations(){GetJData('Translations.json',SetTrData);}
-function Tr(name,defStr=undefined){
+function Tr(name,defStr){
  if(!Translations.hasOwnProperty(name)){
    if(defStr==undefined)
      return name;
@@ -129,7 +131,13 @@ function LSelect(nr){
 function LRestore(){
  LSelect(GetNrCookie("LNr"));}
 //*****************************
-//FeedTimes(data)
+//Create dynamic Entries
+function CD(type,name){
+ const type2Func={"t":MkTxt,"T":MkPw,"n":MkNr,"p":MkPin,"P":MkPercent,"u":MkUint,"w":MkMode};
+ if(type[0]=="d")return MkRow('<th style="padding-top:15px;"></th>');
+ return MkRow(MkCell(name)+MkCell(type2Func[type[0]](),type[1]));}
+//*****************************
+//Feedings(data)
 function MkFeedingsRow(idx,row){
  let res=MkCell(idx)+MkCell(MkCb((row[1]&(1<<7))?1:0))+MkCell(MkTm(row[0]));
  for(let i=0;i<7;++i)res+=MkCell(MkCb((row[1]&(1<<i))?1:0));
@@ -139,7 +147,7 @@ function SetFeedings(data){
  document.getElementById("FeedData").innerHTML=res;}
 function LoadFeedings(){GetJData('FeedTimes.json',SetFeedings);}
 //*****************************
-//FeedTimes(submit)
+//Feedings(submit)
 function SubmitFeedings(){
  const bit2Col=[3,4,5,6,7,8,9,1];
  let tab=document.getElementById("FeedData");
@@ -149,17 +157,13 @@ function SubmitFeedings(){
   jdata.push([GetCellVal(row.cells[2]),bits,GetCellIntVal(row.cells[10])]);}
  PostJRequest(0,"/SetFeedTimes/",jdata);}
 //*****************************
-//FeedTimes(Buttons)
+//Feedings(Buttons)
 function ManualFeed(){
   PostRequest(1,"/ManualFeed/");}
 function StopFeed(){
   PostRequest(5,"/StopFeed/");}
 //*****************************
 //Config(Entries)
-function CD(type,name){
- const type2Func={"c":MkCb,"t":MkTx,"p":MkPw,"n":MkPin,"e":MkMode};
- if(type=="d")return MkRow('<th style="padding-top:15px;"></th>');
- return MkRow(MkCell(name)+MkCell(type2Func[type](name)));}
 function SetConfigEntries(data){
  let res='';for(var key in data)res+=CD(data[key],key); 
  document.getElementById("ConfigData").innerHTML=res;
@@ -178,7 +182,7 @@ function SetConfigData(data){
    }}}
 //*****************************
 //Config(submit)
-function SubmitConfig(event){
+function SubmitConfig(){
  let tab=document.getElementById("ConfigData");
  let cfg={};for(let r=0,row;(row=tab.rows[r]);++r){
   let key=CellGetStr(row.cells[0]);
@@ -200,7 +204,7 @@ function SubmitConfig(event){
 //*****************************
 //ServoSteps(data)
 function MkServoStepsRow(row){
- return MkRow(MkCell(MkNr(row[0],0,180))+MkCell(MkNr(row[1],20,3000))+MkCell(MkNr(row[2],0,10000)));}
+ return MkRow(MkCell(MkNr(0,180,row[0]))+MkCell(MkNr(20,3000,row[1]))+MkCell(MkNr(0,10000,row[2])));}
 function SetServoSteps(data){
  let res="";for(let r=0;r<data.length;++r)res+=MkServoStepsRow(data[r]);
  document.getElementById("ServoStepData").innerHTML=res;}
@@ -252,7 +256,7 @@ function SetStatus(func,ok){
  if(f) f(ResDiv);}
 //*****************************
 //Setup
-function FeederSetup(){
+function SetupOnLoaded(){
  LoadTranslations();
  LoadFeedings();
  LoadConfig();

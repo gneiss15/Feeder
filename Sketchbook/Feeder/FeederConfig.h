@@ -7,9 +7,14 @@
 // Includes
 //****************************************************************
 
-#include <GnEsp8266Basics.h>
-//#include <ESP8266WiFiType.h>
-#include <ESP8266WiFi.h>
+#include <GnBasics.h>
+#ifdef ESP32
+  #include <WiFi.h>
+  #include <WiFiType.h>
+ #else
+  #include <ESP8266WiFi.h>
+#endif
+#include <LittleFS.h>
 #include <ArduinoJson.h>
 
 //****************************************************************
@@ -25,7 +30,7 @@ typedef enum WiFiMode TWifiMode;
 
 typedef struct
  {
-  #define CD( htmlType, typ, name, defValue ) typ name;
+  #define CD( htmlType, typ, name, defValue, ... ) typ name;
   #include "FeederConfig.inc.h"
  }
  TConfig;

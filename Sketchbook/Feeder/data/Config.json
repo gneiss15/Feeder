@@ -1,16 +1,15 @@
 {
-  "WifiMode":2,
-  "WlanSsid":"",
-  "WlanPw":"",
-  "NtpServerAdr":"de.pool.ntp.org",
-  "TZ":"CET-1CEST,M3.5.0,M10.5.0/3",
-  "ApSsid":"Futterautomat_1",
-  "ApPw":"Futterautomat_1",
-  "FtpPw":"",
-  "Hostname":"Feeder",
-  "ServoPin":0,
-  "DirPin":13,
-  "ClkPin":12,
-  "BtnPin":14
+ "WifiMode":2,
+ "WlanSsid":"",
+ "WlanPw":"",
+ "NtpServerAdr":"de.pool.ntp.org",
+ "TZ":"CET-1CEST,M3.5.0,M10.5.0/3",
+ "ApSsid":"Feeder1",
+ "ApPw":"Feeder1",
+ "FtpPw":"Feeder1",
+ "Hostname":"Feeder1",
+ "ServoPin":0,
+ "DirPin":13,
+ "ClkPin":12,
+ "BtnPin":14
 }
-

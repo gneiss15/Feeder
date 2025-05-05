@@ -2,10 +2,7 @@
 // Includes
 //****************************************************************
 
-//#include <stdio.h>
-//#include <string.h>
 #include "FeederConfig.h"
-#include <LittleFS.h>
 
 //****************************************************************
 // Default-Config
@@ -13,7 +10,7 @@
 
 static TConfig DefaultConfig =
  {
-  #define CD( htmlType, typ, name, defValue ) defValue,
+  #define CD( htmlType, typ, name, defValue, ... ) defValue,
   #include "FeederConfig.inc.h"
  };
 
@@ -34,7 +31,7 @@ bool TFeederConfig::Load( String const jsonStr )
   //D Debug( "TFeederConfig::Load: %s\njson: %s<<<\n", error.c_str(), jsonStr.c_str() );
   if( error != DeserializationError::Ok ) // if( error ) ???
     return false;
-  #define CD( htmlType, typ, name, defValue ) FConfig.name = doc[ #name ].as<typ>();
+  #define CD( htmlType, typ, name, defValue, ... ) FConfig.name = doc[ #name ].as<typ>();
   #include "FeederConfig.inc.h"
   return true;
  }
@@ -42,7 +39,7 @@ bool TFeederConfig::Load( String const jsonStr )
 bool TFeederConfig::Save(void)
  {
   JsonDocument doc;
-  #define CD( htmlType, typ, name, defValue ) doc[ #name ] = FConfig.name;
+  #define CD( htmlType, typ, name, defValue, ... ) doc[ #name ] = FConfig.name;
   #include "FeederConfig.inc.h"
 
   File f = LittleFS.open( "/Config.json", "w" );

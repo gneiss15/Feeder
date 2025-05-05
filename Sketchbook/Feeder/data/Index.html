@@ -35,11 +35,11 @@
     </a>
    </li>
    <li class="MenuLi">
-    <a class="MenuA" id="MServoSteps" onclick="MSelect(3)">
+    <a class="MenuA" id="MServoSteps" onclick="MSelect(2)">
      <span name='ServoSteps'>xxx</span>
     </a>
    </li>
-   <li class="MenuLi"><a class="MenuA" id="MUpdate" onclick="MSelect(2)">Fw-Update</a></li>
+   <li class="MenuLi"><a class="MenuA" id="MUpdate" onclick="MSelect(3)">Fw-Update</a></li>
    <li class="MenuDdLi" style="float:right">
     <a class="MenuA" id="MLang" onclick="javascript:void(0)" style="background-color:#3385ff;">EN</a>
     <div class="MenuDdDiv">
@@ -114,9 +114,9 @@
    <tfoot>
     <tr>
      <th colspan=3>
-      <button onClick="SubmitServoSteps()" style="float:left;margin-left:20px;;margin-right:50px"><span name='Save'></span></button>
-      <button onClick="AddServoStep()" style="float:left;margin-left:20px;;margin-right:50px"><span name='+'>+</span></button>
-      <button onClick="RemoveServoStep()" style="float:left;margin-left:20px;;margin-right:50px"><span name='-'>-</span></button>
+      <button onClick="SubmitServoSteps()" style="float:left;margin-left:20px;margin-right:50px"><span name='Save'></span></button>
+      <button onClick="AddServoStep()" style="float:left;margin-left:20px;margin-right:50px"><span name='+'>+</span></button>
+      <button onClick="RemoveServoStep()" style="float:left;margin-left:20px;margin-right:50px"><span name='-'>-</span></button>
       <button onClick="LoadServoSteps()" style="float:right;margin-right:20px;"><span name='Reset'></span></button>
      </th>
     </tr>
@@ -156,7 +156,7 @@
 </div><!-- id="MainDiv" -->
 </body>
 <script>
- document.addEventListener("loaded",FeederSetup());
+ document.addEventListener("loaded",SetupOnLoaded());
 </script>
 </html>
 

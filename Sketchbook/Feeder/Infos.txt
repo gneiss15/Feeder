@@ -1,8 +1,3 @@
-Feeding wird zufrüh als fertig bezeichnet (Servo meldet zu früh...)
-
-x Screensaver !?!
-x Speichern Feed-Times ?? funktioniert nicht
-
 Menüs
 x Edit Wifi-Mode
   -> done inside Status
@@ -24,7 +19,6 @@ x Status
 	
 x Time
 x Manual Feed
-
 
 x Config-Check in Index.js
 

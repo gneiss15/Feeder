@@ -7,9 +7,19 @@
 // Includes
 //****************************************************************
 
-#include <GnEsp8266Basics.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266HTTPUpdateServer.h>
+#include <GnBasics.h>
+#ifdef ESP32
+  #include <WiFi.h>
+  #include <WebServer.h>
+  #include <Update.h>
+ #else
+  #include <ESP8266WiFi.h>
+  #include <ESP8266WebServer.h>
+  #include <ESP8266HTTPUpdateServer.h>
+#endif
+#include <LittleFS.h>
+#include <ArduinoJson.h>
+
 
 //****************************************************************
 // Sw Configuration

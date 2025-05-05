@@ -7,7 +7,16 @@
 // Includes
 //****************************************************************
 
-#include <GnEsp8266Basics.h>
+#include <GnBasics.h>
+#ifdef ESP32
+  #include <WiFi.h>
+  #include <WiFiType.h>
+ #else
+  #include <ESP8266WiFi.h>
+#endif
+#include <LittleFS.h>
+#include <ArduinoJson.h>
+
 #include "Menu.h"
 
 //****************************************************************

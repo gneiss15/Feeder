@@ -159,6 +159,153 @@ extern void * CopyVar_Sizes_not_equal_(void);   // do not implement! => Linker e
 #define unused_para( def, var )       def var __attribute__((unused))
 
 //****************************************************************
+// Functions (GPIO)
+//****************************************************************
+
+#ifndef DONT_USE_GpioPinMacros
+
+#if defined( BOARD_HAS_PIN_REMAP ) && !defined( BOARD_USES_HW_GPIO_NUMBERS )
+  #error "Pin remapping not supported"
+#endif
+
+#ifdef ESP32
+  typedef uint32_t TGpioPinMask;
+ #else
+  typedef uint16_t TGpioPinMask;
+#endif
+
+/*
+  ESP-Pins...
+
+ESP8266		0,2,12-15
+		? nput only
+ESP32		0~39 except 24 & 28~31		32
+		>= 34 are input only
+ESP32S2		0~46 except 22~25
+		46 is input only
+ESP32S3		0~48 except 22~25
+		No GPIO is input only
+ESP32C3		0-21
+		No GPIO is input only
+*/
+
+// Only Pins 0..15(ESP8266) or 0..32(ESP32) are supported !
+#ifdef ESP32
+  static inline void SetPinM( TGpioPinMask pinMask )                                 { GPIO_OUT_REG |= pinMask; }
+  static inline void ClrPinM( TGpioPinMask pinMask )                                 { GPIO_OUT_REG &= ~pinMask; }
+  static inline void TogglePinM( TGpioPinMask pinMask )                              { GPIO_OUT_REG ^= pinMask; }
+  static inline bool GetOutPinM( TGpioPinMask pinMask )                              { return GPIO_OUT_REG & pinMask; }
+  static inline bool GetInPinM( TGpioPinMask pinMask )                               { return GPIO_IN_REG & pinMask; }
+
+  static inline void SetPin( uint8_t pinNr )                                         { SetPinM( Mask( pinNr ) ); }
+  static inline void ClrPin( uint8_t pinNr )                                         { ClrPinM( Mask( pinNr ) ); }
+  static inline void TogglePin( uint8_t pinNr )                                      { TogglePinM( Mask( pinNr ) ); }
+  static inline bool GetOutPin( uint8_t pinNr )                                      { return GetOutPinM( Mask( pinNr ) ); }
+  static inline bool GetInPin( uint8_t pinNr )                                       { return GetInPinM( Mask( pinNr ) ); }
+
+  #if 0 // Not implemented yet 
+    // -> GPIO_ENABLE_REG
+    static inline void PinMode_Output( uint8_t pinNr )
+     {
+      GPF( pinNr ) = GPFFS( GPFFS_GPIO( pinNr ) ); // Set mode to GPIO
+      GPC( pinNr ) = GPC( pinNr ) & ~( ( 1 << GPCS /* 0: SOURCE(GPIO)*/ ) | ( 1 << GPCD /* 0: DRIVER(PushPull) */ ) ); 
+      GPES = ( 1 << pinNr ); // Output
+     }
+    static inline void PinMode_OutputOpenDrain( uint8_t pinNr )
+     {
+      GPF( pinNr ) = GPFFS( GPFFS_GPIO( pinNr ) ); // Set mode to GPIO
+      GPC( pinNr ) =  ( GPC( pinNr ) & ~( 1 << GPCS /* 0: SOURCE(GPIO) */ )  ) | ( 1 << GPCD /* 1: DRIVER(OpenDrain) */ ) ; 
+      GPES = ( 1 << pinNr ); // Output
+     }
+    static inline void PinMode_Input( uint8_t pinNr )
+     {
+      GPF( pinNr ) = GPFFS( GPFFS_GPIO( pinNr ) ); // Set mode to GPIO
+      GPEC = ( 1 << pinNr ); // Input
+      GPC( pinNr ) = ( GPC( pinNr ) & ~( 1 << GPCS /* 0: SOURCE(GPIO) */ ) ) | ( 1 << GPCD /* 1: DRIVER(OpenDrain) */ );
+     }
+    static inline void PinMode_InputPullUp( uint8_t pinNr )
+     {
+      GPF( pinNr ) = GPFFS( GPFFS_GPIO( pinNr ) ) | ( 1 << GPFPU ) ; // Set mode to GPIO & enable PullUp
+      GPEC = ( 1 << pinNr ); // Input
+      GPC( pinNr ) = ( GPC( pinNr ) & ~( 1 << GPCS /* 0: SOURCE(GPIO) */ ) ) | ( 1 << GPCD /* 1: DRIVER(OpenDrain) */ );
+     }
+  #endif
+
+ #else
+  static inline void SetPinM( TGpioPinMask pinMask )                                 { GPOS = pinMask; }
+  static inline void ClrPinM( TGpioPinMask pinMask )                                 { GPOC = pinMask; }
+  static inline void TogglePinM( TGpioPinMask pinMask )                              { GPO ^= pinMask; }
+  static inline bool GetOutPinM( TGpioPinMask pinMask )                              { return GPO & pinMask; }
+  static inline bool GetInPinM( TGpioPinMask pinMask )                               { return GPI & pinMask; }
+
+  static inline void SetPin( uint8_t pinNr )                                         { SetPinM( Mask( pinNr ) ); }
+  static inline void ClrPin( uint8_t pinNr )                                         { ClrPinM( Mask( pinNr ) ); }
+  static inline void TogglePin( uint8_t pinNr )                                      { TogglePinM( Mask( pinNr ) ); }
+  static inline bool GetOutPin( uint8_t pinNr )                                      { return GetOutPinM( Mask( pinNr ) ); }
+  static inline bool GetInPin( uint8_t pinNr )                                       { return GetInPinM( Mask( pinNr ) ); }
+
+  static inline void PinMode_Output( uint8_t pinNr )
+   {
+    GPF( pinNr ) = GPFFS( GPFFS_GPIO( pinNr ) ); // Set mode to GPIO
+    GPC( pinNr ) = GPC( pinNr ) & ~( ( 1 << GPCS /* 0: SOURCE(GPIO)*/ ) | ( 1 << GPCD /* 0: DRIVER(PushPull) */ ) ); 
+    GPES = ( 1 << pinNr ); // Output
+   }
+  static inline void PinMode_OutputOpenDrain( uint8_t pinNr )
+   {
+    GPF( pinNr ) = GPFFS( GPFFS_GPIO( pinNr ) ); // Set mode to GPIO
+    GPC( pinNr ) =  ( GPC( pinNr ) & ~( 1 << GPCS /* 0: SOURCE(GPIO) */ )  ) | ( 1 << GPCD /* 1: DRIVER(OpenDrain) */ ) ; 
+    GPES = ( 1 << pinNr ); // Output
+   }
+  static inline void PinMode_Input( uint8_t pinNr )
+   {
+    GPF( pinNr ) = GPFFS( GPFFS_GPIO( pinNr ) ); // Set mode to GPIO
+    GPEC = ( 1 << pinNr ); // Input
+    GPC( pinNr ) = ( GPC( pinNr ) & ~( 1 << GPCS /* 0: SOURCE(GPIO) */ ) ) | ( 1 << GPCD /* 1: DRIVER(OpenDrain) */ );
+   }
+  static inline void PinMode_InputPullUp( uint8_t pinNr )
+   {
+    GPF( pinNr ) = GPFFS( GPFFS_GPIO( pinNr ) ) | ( 1 << GPFPU ) ; // Set mode to GPIO & enable PullUp
+    GPEC = ( 1 << pinNr ); // Input
+    GPC( pinNr ) = ( GPC( pinNr ) & ~( 1 << GPCS /* 0: SOURCE(GPIO) */ ) ) | ( 1 << GPCD /* 1: DRIVER(OpenDrain) */ );
+   }
+#endif
+
+
+//?#define GnPinMask( pin )              ( (TGpioPinMask)( 1 ) << ( pin ) )
+//?#define GpioModReg            ( (volatile TGpioPinMask *)GPIO_ENABLE_REG )
+
+  
+// For GPIO-Irqs see: core_esp8266_wiring_digital.cpp or core_esp8266_wiring_digital.c
+  
+//****************************************************************
+// Functions (others)
+//****************************************************************
+
+static inline IRAM_ATTR uint32_t GetCycleCount(void)
+ {
+  uint32_t ccount;
+  __asm__ __volatile__( "esync; rsr %0,ccount":"=a" ( ccount ) );
+  return ccount;
+ }
+
+#else // USE_GpioPinMacros
+
+// ...PinM: Not Usable
+#define SetPin( pinNr )                                     digitalWrite( pinNr, 1 )
+#define ClrPin( pinNr )                                     digitalWrite( pinNr, 0 )
+#define TogglePin( pinNr )                                  digitalWrite( pinNr, !GetOutPin( pinNr ) )
+//?#define GetOutPin( pinNr )                                  digitalReadOutputPin( pinNr ) 
+#define GetOutPin( pinNr )                                  digitalRead( pinNr ) 
+#define GetInPin( pinNr )                                   digitalRead( pinNr ) 
+
+#define PinMode_Output( pinNr )                             pinMode( FPinNr, OUTPUT )
+#define PinMode_OutputOpenDrain( pinNr )                    pinMode( FPinNr, OUTPUT_OPEN_DRAIN )
+#define PinMode_Input( pinNr )                              pinMode( FPinNr, INPUT )
+#define PinMode_InputPullUp( pinNr )                        pinMode( FPinNr, INPUT_PULLUP )
+
+#endif // USE_GpioPinMacros
+
+//****************************************************************
 // CTassert & derivates
 //****************************************************************
 

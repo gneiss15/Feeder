@@ -1,1 +1,1 @@
-{"WifiMode":"e","T1":"d","WlanSsid":"t","WlanPw":"p","NtpServerAdr":"t","TZ":"t","T2":"d","ApSsid":"t","ApPw":"p","T3":"d","FtpPw":"p","T4":"d","Hostname":"t","T5":"d","ServoPin":"n","DirPin":"n","ClkPin":"n","BtnPin":"n","TLast":"d"}
+{"WifiMode":["w",""],"T0":["d",""],"WlanSsid":["t",""],"WlanPw":["T",""],"NtpServerAdr":["t",""],"TZ":["t",""],"T1":["d",""],"ApSsid":["t",""],"ApPw":["T",""],"T2":["d",""],"FtpPw":["T",""],"T3":["d",""],"Hostname":["t",""],"T4":["d",""],"ServoPin":["p","0-15"],"DirPin":["p","0-15"],"ClkPin":["p","0-15"],"BtnPin":["p","0-15"],"TLast":["d",""]}

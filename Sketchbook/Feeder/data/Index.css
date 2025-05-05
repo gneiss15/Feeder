@@ -1,14 +1,14 @@
 /*
  Shortcuts:
- Dd: DropDown
+ Dd:DropDown
 */
 div {
  text-align:center;
- /*
- border:1px solid #000;
- */
 }
-input[type=number] {text-align: right;}
+
+input[type=number] {
+ text-align:right;
+}
 
 .MenuSelectDiv {
  display:none;
@@ -18,62 +18,62 @@ input[type=number] {text-align: right;}
 }
 
 .Menu {
- list-style-type: none;
- overflow: hidden;
- margin: 0;
- padding: 0;
+ list-style-type:none;
+ overflow:hidden;
+ margin:0;
+ padding:0;
  background-color:#f1f1f1;
  border:1px solid #ccc;
- width: 100%;
+ width:100%;
  font-size:1.6em;
- font-weight: bold;
+ font-weight:bold;
 }
 .MenuLi {
  display:inline-flex;
 }
 .MenuA, .MenuDdA {
- display: inline-block;
- color: black;
- padding: 14px 16px;
- text-align: center;
- text-decoration: none;
+ display:inline-block;
+ color:black;
+ padding:14px 16px;
+ text-align:center;
+ text-decoration:none;
  cursor:pointer;
 }
 .MenuABlk {
- display: inline-block;
- color: #f1f1f1;
- padding: 14px 16px;
- text-align: center;
- text-decoration: none;
+ display:inline-block;
+ color:#f1f1f1;
+ padding:14px 16px;
+ text-align:center;
+ text-decoration:none;
 }
 .MenuDdA {
- display: block;
- color: black;
- padding: 14px 16px;
- text-align: left;
- text-decoration: none;
+ display:block;
+ color:black;
+ padding:14px 16px;
+ text-align:left;
+ text-decoration:none;
 }
 .MenuA.active, .MenuDdA.active {
- background-color: #04AA6D;
- color: white;
+ background-color:#04AA6D;
+ color:white;
 }	
 .MenuA:hover, .MenuDdA:hover, .MenuDdLi:hover {
- background-color: #037c50;
- color: white;
+ background-color:#037c50;
+ color:white;
 }
 .MenuA:hover:not(.active), .MenuDdA:hover:not(.active), .MenuDdLi:hover:not(.active) {
- background-color: #555;
- color: white;
+ background-color:#555;
+ color:white;
 }
 .MenuDdDiv {
- display: none;
- position: absolute;
- background-color: #f9f9f9;
- box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
- z-index: 1;
+ display:none;
+ position:absolute;
+ background-color:#f9f9f9;
+ box-shadow:0px 8px 16px 0px rgba(0,0,0,0.2);
+ z-index:1;
 }
 .MenuDdLi:hover .MenuDdDiv {
- display: block;
+ display:block;
 }
 
 table, th, td {
@@ -91,6 +91,14 @@ table {
  text-align:left;
  border:0px;
 }
+#Config input[type=text], #Config input[type=password], #Config select {
+ font-size:100%;
+ width:20em;
+}
+#Config input[type=number] {
+ width:6em;
+}
+
 #Update table {
  border:1px solid black;
  font-size:1.5em;

@@ -2,7 +2,7 @@
 #define ClosuresH
 #pragma once
 
-#include <GnEsp8266Basics.h>
+#include <GnBasics.h>
 #include <memory.h> // to allow <,> comparisons
 
 // Shortcuts used

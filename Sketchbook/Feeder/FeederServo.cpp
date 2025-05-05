@@ -3,9 +3,8 @@
 //****************************************************************
 
 #include "FeederServo.h"
-#include <LittleFS.h>
+
 #include "FeederConfig.h"
-#include <ArduinoJson.h>
 
 //****************************************************************
 // Sw Configuration
@@ -46,6 +45,10 @@ TFeederServo::~TFeederServo(void)
 
 int32_t TFeederServo::Position_Grad2Soll_Clks( double position_Grad )
  {
+  if( position_Grad < 0 )
+    position_Grad = 0;
+  if( position_Grad > 180 )
+    position_Grad = 180;
   return FdPulseWidthClks * position_Grad / Servo_FullTurn_Grad + FMinPulseWidthClks;
  }
 int32_t TFeederServo::Speed_ms2Speed_Clks( uint32_t speed_ms )
@@ -54,11 +57,12 @@ int32_t TFeederServo::Speed_ms2Speed_Clks( uint32_t speed_ms )
     speed_ms = 20;
   if( speed_ms > 3000 )
     speed_ms = 3000;
-
   return Clks2Us( FdPulseWidthClks_Mul_PeriodClks / Us2Clks( speed_ms * 1000 ) );
  }
 int32_t TFeederServo::Hold_ms2Hold_Counts( uint32_t hold_ms )
  {
+  if( hold_ms > 10000 )
+    hold_ms = 10000;
   return hold_ms / ( Servo_Period_us / 1000 ) + 1;
  }
 

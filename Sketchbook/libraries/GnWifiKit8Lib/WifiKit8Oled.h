@@ -7,7 +7,7 @@
 // Includes
 //****************************************************************
 
-#include <GnEsp8266Basics.h>
+#include <GnBasics.h>
 #include <U8g2lib.h>
 #include <GnCoopTimer.h>
 

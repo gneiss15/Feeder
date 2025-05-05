@@ -33,6 +33,24 @@ Restrict	KEYWORD2
 #TimeString	KEYWORD2
 Loop	KEYWORD2
 
+SetPinM	KEYWORD2
+SetPin	KEYWORD2
+ClrPinM	KEYWORD2
+ClrPin	KEYWORD2
+TogglePinM	KEYWORD2
+TogglePin	KEYWORD2
+GetOutPinM	KEYWORD2
+GetOutPin	KEYWORD2
+GetInPinM	KEYWORD2
+GetInPin	KEYWORD2
+
+PinMode_Output	KEYWORD2
+PinMode_OutputOpenDrain	KEYWORD2
+PinMode_Input	KEYWORD2
+PinMode_InputPullUp	KEYWORD2
+
+GetCycleCount	KEYWORD2
+
 # Closures
 Closure	KEYWORD2
 

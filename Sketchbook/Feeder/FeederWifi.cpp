@@ -3,17 +3,19 @@
 //****************************************************************
 
 #include "FeederWifi.h"
-//#include <WifiKit8Oled.h>
-
-#include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
-#include <LittleFS.h>
-#include <coredecls.h>                  // settimeofday_cb()
 
 #include "FeedTimes.h"
 #include "FeederServo.h"
 #include "FeederConfig.h"
 
+#ifdef ESP32
+  #include <WiFi.h>
+ #else
+  #include <ESP8266WiFi.h>
+  #include <ESP8266mDNS.h>
+  #include <coredecls.h>                  // settimeofday_cb()
+#endif
+#include <LittleFS.h>
 #include <WifiKit8Oled.h>
 
 //****************************************************************

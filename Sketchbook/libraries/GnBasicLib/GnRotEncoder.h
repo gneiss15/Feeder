@@ -69,7 +69,7 @@
 // Includes
 //****************************************************************
 
-#include <GnEsp8266Basics.h>
+#include <GnBasics.h>
 #include <GnCoopTimer.h>
 //#include <Closures.h>	included by GnCoopTimer.h
 
